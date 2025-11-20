@@ -120,6 +120,9 @@ function startCameraMode() {
                 // Enviar info actual apenas se conecten
                 sendInfo(conn);
             });
+            conn.on('error', (err) => {
+                 log("Error canal de datos (Cámara): " + err);
+            });
         });
 
         // Manejo de llamadas de Video
@@ -129,10 +132,12 @@ function startCameraMode() {
         });
 
         peer.on('error', (err) => {
-            log("ERROR: " + err.type);
+            log("ERROR PEER CÁMARA: " + err.type + " - " + err.message);
             if(err.type === 'unavailable-id') {
                 alert("El nombre '" + cleanName + "' ya está en uso.");
                 uiGoBack();
+            } else {
+                 statusMsg.innerText = "Error crítico de conexión.";
             }
         });
     })
@@ -142,7 +147,7 @@ function startCameraMode() {
     });
 }
 
-// --- NUEVA FUNCIÓN: ACTUALIZAR UBICACIÓN EN VIVO ---
+// --- FUNCIÓN: ACTUALIZAR UBICACIÓN EN VIVO ---
 function updateLiveLocation() {
     // 1. Obtener el nuevo valor del selector
     const newLoc = liveLocationSelector.value;
@@ -194,7 +199,7 @@ function startViewerMode() {
     peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
-        log("Conectado como Visor.");
+        log("Conectado como Visor con ID: " + id); // Log más detallado
         statusMsg.innerText = "Contactando cámara...";
 
         // 1. Conectar canal de DATOS
@@ -207,10 +212,20 @@ function startViewerMode() {
         // AQUÍ RECIBIMOS LAS ACTUALIZACIONES DE UBICACIÓN
         conn.on('data', (data) => {
             if(data.type === 'info') {
-                videoInfoText.innerHTML = `${data.petName} (${data.species}) <br><span style="font-size:0.8em; opacity:0.9; color: #FFCCBC;">📍 ${data.location}</span>`;
+                // Ajuste de tamaño de fuente para mejor visibilidad
+                videoInfoText.innerHTML = `${data.petName} (${data.species}) <br><span style="font-size:0.9em; opacity:0.9; color: #FFCCBC;">📍 ${data.location}</span>`; 
                 log("📥 Ubicación actualizada: " + data.location);
             }
         });
+        
+        conn.on('error', (err) => {
+            log("Error canal de datos (Visor): " + err);
+        });
+        
+        conn.on('close', () => {
+            log("Canal de datos cerrado.");
+        });
+
 
         // 2. Iniciar llamada de VIDEO
         const canvas = document.createElement('canvas');
@@ -248,11 +263,22 @@ function startViewerMode() {
             log("Error llamada: " + err);
             statusMsg.innerText = "Corte de transmisión.";
         });
+        
+        call.on('close', () => {
+            log("Llamada cerrada.");
+            statusMsg.innerText = "Transmisión finalizada o perdida.";
+            statusMsg.classList.remove('hidden');
+        });
     });
 
+    // --- CORRECCIÓN CLAVE: MANEJO DE ERROR DEL PEER PRINCIPAL ---
     peer.on('error', (err) => {
-        if(err.type === 'peer-unavailable') {
-            statusMsg.innerText = "Cámara no encontrada.";
+        log("ERROR PEER VISOR: " + err.type + " - " + err.message);
+        // El error que mencionas ('Could not connect to peer') se reporta aquí como 'peer-unavailable'
+        if(err.type === 'peer-unavailable' || err.type === 'network') {
+            statusMsg.innerText = "Cámara no encontrada. Asegúrate que el ID sea correcto y esté transmitiendo.";
+        } else {
+             statusMsg.innerText = "Error de conexión: " + err.type;
         }
     });
 }
