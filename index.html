@@ -12,20 +12,29 @@
     <header class="header">
         <nav class="navbar">
             <div class="logo">DOGLAND 🐾</div>
-            <ul class="nav-links">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#servicios">Servicios</a></li>
-                <li><a href="monitoreo.html">Monitoreo 🎥</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-            </ul>
-            <a href="#" class="btn-login">Iniciar Sesión</a>
+            
+            <div class="hamburger" id="mobile-menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+
+            <div class="nav-menu" id="nav-menu">
+                <ul class="nav-links">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#servicios">Servicios</a></li>
+                    <li><a href="monitoreo.html">Monitoreo 🎥</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                </ul>
+                <a href="#" class="btn-login">Iniciar Sesión</a>
+            </div>
         </nav>
 
-        <div class="hero">
+        <div class="hero" id="inicio">
             <div class="hero-content">
                 <h1>Cuidado y Tranquilidad para tu Mascota</h1>
                 <p>En **DOGLAND**, tus perros y gatos están en las mejores manos. Ofrecemos servicios veterinarios de calidad y la única plataforma que te permite **vigilarlos 24/7** desde tu móvil.</p>
-                <a href="#monitoreo" class="btn-main">Acceder a Cámaras Ahora</a>
+                <a href="monitoreo.html" class="btn-main">Acceder a Cámaras Ahora</a>
             </div>
             <div class="hero-image">
                 <img src="mascotas.png" alt="Perro y gato felices en DOGLAND">
@@ -59,11 +68,30 @@
 
         </section>
 
+    
+
     </main>
 
     <footer class="footer">
         <p>&copy; 2025 DOGLAND Veterinaria. Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+        const hamburger = document.getElementById('mobile-menu');
+        const navMenu = document.getElementById('nav-menu');
+
+        // Abrir/Cerrar menú al tocar el icono
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Cerrar menú al tocar un enlace (para navegar suavemente)
+        document.querySelectorAll('.nav-links a').forEach(n => n.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+        }));
+    </script>
 
 </body>
 </html>
