@@ -69,7 +69,7 @@
                 <option value="Otro">🐾 Otro</option>
             </select>
 
-            <p>3. Ubicación Actual:</p>
+            <p>3. Ubicación Inicial:</p>
             <select id="reg-location" class="input-field">
                 <option value="Área de Juegos (Perros)">🎾 Juegos Perros</option>
                 <option value="Área de Juegos (Gatos)">🧶 Juegos Gatos</option>
@@ -98,9 +98,18 @@
 
         <div class="video-container hidden" id="video-screen">
             <div class="video-header">
-                <div>
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">
                     <span class="live-indicator">🔴 EN VIVO</span>
+                    
                     <span id="video-info-text" style="margin-left: 10px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Conectando...</span>
+
+                    <select id="live-location-selector" class="live-selector hidden" onchange="updateLiveLocation()">
+                        <option value="Área de Juegos (Perros)">🎾 Juegos Perros</option>
+                        <option value="Área de Juegos (Gatos)">🧶 Juegos Gatos</option>
+                        <option value="Área de Baño">🛁 Área de Baño</option>
+                        <option value="Consultorio Veterinario">🩺 Veterinario</option>
+                        <option value="Descanso / Jaulas">💤 Zona de Descanso</option>
+                    </select>
                 </div>
                 <button class="btn-close" onclick="location.reload()">✖ Salir</button>
             </div>
