@@ -1,0 +1,303 @@
+/* Variables de Colores */
+:root {
+    --color-primary: #8B5A2B;      /* Café medio para acentos y botones */
+    --color-secondary: #BCAAA4;    /* Café claro/Grisáceo suave para fondo de secciones */
+    --color-background: #F5F5DC;   /* Beige/Crema para el fondo general del body */
+    --color-hero-bg: #E8E4DA;      /* <--- NUEVO: Café Claro/Beige muy suave para el Hero y Navbar */
+    --color-navbar-bg: #E8E4DA;    /* <--- NUEVO: Café Claro/Beige muy suave para la Hero y Navbar */
+    --color-text-dark: #3E2723;    /* Café muy oscuro para texto */
+    --color-text-light: #FFFFFF;   /* Blanco (para texto en botones oscuros) */
+    --color-accent: #A5D6A7;       /* Verde claro/suave para un toque de frescura */
+}
+
+/* Estilos Generales */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    background-color: var(--color-background);
+    color: var(--color-text-dark);
+}
+
+a {
+    text-decoration: none;
+    color: var(--color-primary);
+}
+
+/* --- Estilos del Header/Navegación --- */
+.header {
+    padding-bottom: 40px;
+    border-bottom: 5px solid var(--color-primary);
+}
+
+.navbar {
+    background-color: var(--color-background);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    flex-wrap: wrap;
+}
+
+.logo {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--color-text-dark);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.nav-links li {
+    margin-left: 30px;
+}
+
+.nav-links a {
+    color: var(--color-text-dark);
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--color-primary);
+}
+
+.btn-login {
+    padding: 8px 15px;
+    border: 2px solid var(--color-primary);
+    border-radius: 5px;
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-login:hover {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+}
+
+/* --- Estilos del Hero (Encabezado Principal) --- */
+.hero {
+    background-color: var(--color-hero-bg); /* Aplicando el color Café Claro */
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 60px 5%;
+    gap: 40px;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.hero-content {
+    max-width: 500px;
+    text-align: left;
+}
+
+.hero h1 {
+    font-size: 2.8em;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: var(--color-primary);
+}
+
+.hero p {
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+.hero-image {
+    width: 400px;
+    height: 300px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* --- Estilos de Botones Principales --- */
+.btn-main {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.btn-main:hover {
+    background-color: #6D4C41;
+}
+
+.btn-secondary {
+    display: inline-block;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+}
+
+/* --- Estilos de la Sección de Monitoreo --- */
+.feature-section {
+    background-color: var(--color-background);
+    padding: 60px 5%;
+    text-align: center;
+}
+
+.feature-section h2 {
+    font-size: 2em;
+    color: var(--color-primary);
+    margin-bottom: 40px;
+}
+
+.feature-card {
+    background-color: var(--color-background);
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.feature-card h3 {
+    margin-bottom: 10px;
+    color: var(--color-text-dark);
+}
+
+/* --- Estilos del Footer --- */
+.footer {
+    background-color: var(--color-text-dark);
+    color: var(--color-secondary);
+    text-align: center;
+    padding: 20px 5%;
+    margin-top: 40px;
+}
+
+/* --- Media Queries para Responsividad --- */
+
+/* Para tablets y dispositivos más pequeños (ancho máximo de 992px) */
+@media (max-width: 992px) {
+    .navbar {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .nav-links {
+        margin-top: 15px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .nav-links li {
+        margin: 0 15px 10px 15px;
+    }
+
+    .btn-login {
+        width: 100%;
+        margin-top: 15px;
+        padding: 10px;
+    }
+
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 5%;
+    }
+
+    .hero-content {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 2.2em;
+    }
+
+    .hero p {
+        font-size: 1em;
+    }
+
+    .hero-image {
+        width: 80%;
+        height: 250px;
+        margin-top: 30px;
+    }
+
+    .feature-section {
+        padding: 40px 5%;
+    }
+}
+
+/* Para móviles (ancho máximo de 768px) */
+@media (max-width: 768px) {
+    .logo {
+        font-size: 1.5em;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links li {
+        margin: 10px 0;
+    }
+
+    .hero h1 {
+        font-size: 1.8em;
+    }
+
+    .hero-image {
+        width: 95%;
+        height: 200px;
+    }
+
+    .feature-section h2 {
+        font-size: 1.8em;
+    }
+}
+
+/* Para móviles pequeños (ancho máximo de 480px) */
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 1.5em;
+    }
+
+    .hero p {
+        font-size: 0.9em;
+    }
+
+    .btn-main, .btn-secondary {
+        width: 90%;
+        padding: 10px;
+        margin-top: 10px;
+    }
+}
