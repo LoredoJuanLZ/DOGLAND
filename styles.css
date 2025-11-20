@@ -399,3 +399,70 @@ a {
     .hero h1 { font-size: 1.5em; }
     .btn-main, .btn-secondary { width: 90%; padding: 10px; margin-top: 10px; }
 }
+
+/* --- NUEVOS ESTILOS PARA LOGOS --- */
+
+/* 2. LOGO EN EL NAVBAR */
+.navbar-logo {
+    height: 80px; /* Tamaño del logo */
+    width: auto;
+    margin-right: 8px; /* Espacio entre el logo y el texto */
+    vertical-align: middle;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.5em; /* Asegurar que el texto se vea bien con el logo */
+}
+
+/* 3. IMAGEN ESTAMPITA EN EL HERO */
+
+    /* Es CRUCIAL que el contenedor de la imagen tenga posición relativa */
+/* ------------------------------------------------------- */
+/* REEMPLAZA TODO EL BLOQUE RELACIONADO AL HERO POR ESTO: */
+/* ------------------------------------------------------- */
+/* --------------------------------------------------------- */
+/* BORRA LOS ESTILOS ANTERIORES DE .hero-image Y PEGA ESTO:  */
+/* --------------------------------------------------------- */
+
+.hero-image {
+    width: 400px;
+    height: 300px;
+    position: relative; /* Necesario para ubicar la estampita */
+    
+    /* ESTA ES LA CLAVE: visible !important obliga a NO recortar */
+    overflow: visible !important; 
+    
+    box-shadow: 0 10px 20px rgba(111, 78, 55, 0.15);
+    z-index: 1;
+    border-radius: 10px; /* Mantenemos el borde redondeado aquí por si acaso */
+}
+
+/* Aseguramos que la FOTO tenga los bordes redondeados, ya que el contenedor no recorta */
+.main-hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px; /* La foto se redondea sola */
+    display: block;
+}
+
+/* ESTILO DE LA ESTAMPITA (LOGO) */
+.hero-stamp {
+    position: absolute;
+    /* Ajuste de posición para que sobresalga bien */
+    top: -40px;    
+    right: -40px;  
+    
+    /* Aumentamos el tamaño para que se vea bien */
+    width: 130px !important; 
+    height: 130px !important;
+    
+    background-color: var(--color-primary);
+    border-radius: 50%;
+    padding: 10px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 100; /* Un número alto para asegurar que flote encima de todo */
+    transform: rotate(15deg);
+}
