@@ -1,15 +1,15 @@
-/* Importar Variables de Colores del estilo principal (para consistencia) */
+/* Importar Variables (Mismas que styles.css para consistencia) */
 :root {
-    --color-primary: #8B5A2B;      /* Café medio */
-    --color-secondary: #BCAAA4;    /* Café claro/Grisáceo suave */
-    --color-background: #F5F5DC;   /* Beige/Crema para el fondo de la página */
-    --color-page-bg: #E8E4DA;      /* <--- NUEVO: Color Café Claro/Beige para el Hero/Contenedores */
-    --color-text-dark: #3E2723;    /* Café muy oscuro para texto */
-    --color-text-light: #FFFFFF;   /* Blanco (para texto en botones oscuros) */
-    --color-accent: #A5D6A7;       /* Verde claro/suave para un toque de frescura */
+    --color-primary: #6F4E37;      /* Café Grano */
+    --color-secondary: #D7CCC8;    /* Café Latte suave */
+    --color-background: #FFFFFF;   /* Blanco Puro */
+    --color-page-bg: #F2EBE5;      /* Tono Lino/Arena (No amarillo) */
+    --color-text-dark: #3E2723;    /* Café oscuro */
+    --color-text-light: #FFFFFF;   /* Blanco */
+    --color-accent: #8D6E63;       
 }
 
-/* Estilos Generales y Tipografía */
+/* Estilos Generales */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -19,7 +19,7 @@
 body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
-    background-color: var(--color-background);
+    background-color: var(--color-background); /* Fondo blanco */
     color: var(--color-text-dark);
 }
 
@@ -28,13 +28,13 @@ a {
     color: var(--color-primary);
 }
 
-/* --- Estilos de Navegación (Monitoreo) --- */
+/* --- Navegación --- */
 .header-monitoreo {
-    border-bottom: 5px solid var(--color-primary);
+    border-bottom: 1px solid var(--color-secondary);
 }
 
 .navbar-monitoreo {
-    background-color: var(--color-page-bg); /* Aplicando el color Café Claro */
+    background-color: var(--color-page-bg); /* Tono Lino */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -44,7 +44,7 @@ a {
 .logo {
     font-size: 1.8em;
     font-weight: 700;
-    color: var(--color-text-dark);
+    color: var(--color-primary);
 }
 
 .nav-links {
@@ -74,6 +74,7 @@ a {
     align-items: center;
     min-height: 70vh;
     text-align: center;
+    background-color: var(--color-background); /* Fondo blanco para limpieza */
 }
 
 .monitoreo-container {
@@ -89,11 +90,11 @@ a {
 
 .subtitle {
     font-size: 1.2em;
-    color: var(--color-text-dark);
+    color: #5D4037;
     margin-bottom: 40px;
 }
 
-/* --- Grid de Tarjetas de Opción --- */
+/* --- Grid de Tarjetas --- */
 .card-grid {
     display: flex;
     gap: 30px;
@@ -101,19 +102,20 @@ a {
 }
 
 .access-card {
-    background-color: var(--color-page-bg); /* Aplicando el color Café Claro a las tarjetas */
+    background-color: #FAFAFA; /* Casi blanco */
     border: 1px solid var(--color-secondary);
     border-radius: 10px;
     padding: 40px;
     flex: 1;
     max-width: 400px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 5px 20px rgba(111, 78, 55, 0.08); /* Sombra café muy tenue */
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .access-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(111, 78, 55, 0.15);
+    border-color: var(--color-primary);
 }
 
 .card-icon {
@@ -126,7 +128,7 @@ a {
     margin-bottom: 15px;
 }
 
-/* --- Estilos de Botones Específicos de Monitoreo --- */
+/* --- Botones --- */
 .btn-main-monitoreo {
     display: inline-block;
     background-color: var(--color-primary);
@@ -135,22 +137,26 @@ a {
     border-radius: 5px;
     font-weight: 600;
     margin-top: 20px;
+    border: none;
     transition: background-color 0.3s;
+    width: 100%; /* Botones anchos en tarjetas */
 }
 
 .btn-main-monitoreo:hover {
-    background-color: #6D4C41;
+    background-color: #4E342E;
 }
 
 .btn-secondary-monitoreo {
     display: inline-block;
     color: var(--color-primary);
-    border: 2px solid var(--color-primary);
+    border: 1px solid var(--color-primary);
+    background-color: transparent;
     padding: 12px 25px;
     border-radius: 5px;
     font-weight: 600;
     margin-top: 20px;
     transition: background-color 0.3s, color 0.3s;
+    width: 100%;
 }
 
 .btn-secondary-monitoreo:hover {
@@ -158,50 +164,24 @@ a {
     color: var(--color-text-light);
 }
 
-/* --- Estilos del Footer --- */
+/* --- Footer --- */
 .footer-monitoreo {
     background-color: var(--color-text-dark);
     color: var(--color-secondary);
     text-align: center;
-    padding: 20px 5%;
+    padding: 30px 5%;
 }
 
-/* --- Media Queries para Responsividad --- */
-@media (max-width: 768px) {
-    .card-grid {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .access-card {
-        max-width: 100%;
-    }
-
-    .navbar-monitoreo {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .nav-links {
-        margin-top: 10px;
-        padding-left: 0;
-    }
-
-    .nav-links li {
-        margin: 5px 15px;
-    }
-}
-/* --- CLASES DE UTILIDAD --- */
+/* --- Formularios Ocultos --- */
 .hidden {
     display: none !important;
 }
 
-/* --- ESTILOS DE FORMULARIOS (NUEVO) --- */
 .form-container {
-    background-color: var(--color-page-bg);
+    background-color: #FFFFFF;
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     max-width: 500px;
     width: 100%;
     text-align: center;
@@ -210,30 +190,37 @@ a {
 
 .input-field {
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid var(--color-secondary);
+    padding: 15px;
+    margin: 15px 0;
+    border: 1px solid var(--color-secondary);
     border-radius: 5px;
     font-family: 'Poppins', sans-serif;
     font-size: 1em;
+    background-color: #FFFEFC; /* Blanco muy sutilmente cálido para inputs */
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: #FFFFFF;
 }
 
 .button-group {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    gap: 15px;
     margin-top: 20px;
 }
 
-/* --- ESTILOS DEL VIDEO (NUEVO) --- */
+/* --- Video UI --- */
 .video-container {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #000; /* Fondo negro para video */
-    z-index: 1000; /* Encima de todo */
+    background-color: #000; 
+    z-index: 1000; 
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -250,43 +237,203 @@ a {
     align-items: center;
     z-index: 1001;
     color: #fff;
+    background: rgba(0,0,0,0.3); /* Fondo semi-transparente para legibilidad */
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .live-indicator {
-    background-color: red;
+    background-color: #D32F2F; /* Rojo vivo */
     color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 5px 12px;
+    border-radius: 4px;
     font-weight: bold;
+    font-size: 0.9em;
     animation: pulse 1.5s infinite;
+    letter-spacing: 1px;
 }
 
 .btn-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255,255,255,0.3);
     color: white;
-    padding: 5px 15px;
+    padding: 8px 15px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 video {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Llena la pantalla */
-    background: #222;
+    object-fit: cover;
+    background: #1a1a1a;
 }
 
 #status-msg {
     position: absolute;
     color: white;
-    background: rgba(0,0,0,0.5);
-    padding: 10px;
-    border-radius: 5px;
+    background: rgba(62, 39, 35, 0.8); /* Fondo café muy oscuro */
+    padding: 15px 25px;
+    border-radius: 50px;
+    font-weight: 500;
+    bottom: 100px; /* Mover mensaje abajo */
 }
 
 @keyframes pulse {
     0% { opacity: 1; }
-    50% { opacity: 0.5; }
+    50% { opacity: 0.6; }
     100% { opacity: 1; }
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .card-grid { flex-direction: column; gap: 20px; }
+    .access-card { max-width: 100%; }
+    .navbar-monitoreo { flex-direction: column; text-align: center; }
+    .nav-links { margin-top: 10px; padding-left: 0; }
+    .nav-links li { margin: 5px 15px; }
+}
+
+/* =========================================
+   ANIMACIONES DE LAS TARJETAS (COLORES REALISTAS)
+========================================= */
+
+/* Contenedor base */
+.animated-icon-container {
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1rem; 
+}
+
+/* --- ANIMACIÓN 1: EL MONITOR (Dueño) - Colores Realistas --- */
+.monitor-anim {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.monitor-screen {
+    width: 70px;
+    height: 50px;
+    background: #333333; /* Pantalla apagada gris oscuro */
+    border: 4px solid #111111; /* Marco negro */
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Brillo azulado de pantalla encendida */
+    box-shadow: 0 0 15px rgba(100, 180, 255, 0.3); 
+    animation: monitorGlowReal 3s ease-in-out infinite alternate;
+}
+
+.monitor-stand {
+    width: 30px;
+    height: 8px;
+    background: #111111; /* Base negra */
+    border-radius: 0 0 4px 4px;
+    margin-top: -2px;
+}
+
+.play-btn {
+    color: #FFFFFF; /* Botón play blanco brillante */
+    font-size: 20px;
+    text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    animation: pulseBtn 1.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+/* Keyframes Monitor Realista (Brillo azul frío) */
+@keyframes monitorGlowReal {
+    0% { box-shadow: 0 0 5px rgba(100, 180, 255, 0.1); }
+    100% { box-shadow: 0 0 25px rgba(100, 180, 255, 0.6); }
+}
+
+@keyframes pulseBtn {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+
+
+/* --- ANIMACIÓN 2: LA CÁMARA (Dispositivo) - Colores Realistas --- */
+.camera-anim {
+    position: relative;
+    padding-right: 15px;
+    filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.2));
+}
+
+.cam-body {
+    width: 65px;
+    height: 40px;
+    background: #555555; /* Cuerpo gris metálico oscuro */
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #444; /* Borde sutil para definición */
+    background: linear-gradient(to bottom, #666, #444); /* Gradiente metálico sutil */
+}
+
+/* Visor trasero */
+.cam-body::after {
+    content: '';
+    position: absolute;
+    right: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-left: 18px solid #555555; /* Mismo gris del cuerpo */
+}
+
+.cam-lens {
+    width: 28px;
+    height: 28px;
+    background: #000000; /* Lente negro puro */
+    border-radius: 50%;
+    margin-left: 6px;
+    border: 3px solid #AAAAAA; /* Anillo plateado metálico */
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 5px rgba(255,255,255,0.2);
+}
+
+/* Reflejo en el lente */
+.cam-lens::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 30%;
+    height: 30%;
+    background: rgba(255,255,255,0.6); /* Reflejo blanco más nítido */
+    border-radius: 50%;
+}
+
+/* Punto rojo de grabación realista */
+.cam-rec-dot {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff0000; /* Rojo puro brillante */
+    border-radius: 50%;
+    border: 1px solid #cc0000;
+    box-shadow: 0 0 8px #ff0000; /* Resplandor rojo */
+    animation: blinkRec 1s infinite steps(1);
+}
+
+@keyframes blinkRec {
+    50% { opacity: 0; }
 }
