@@ -5,7 +5,8 @@ const viewerForm = document.getElementById('viewer-form');
 const videoScreen = document.getElementById('video-screen');
 const remoteVideo = document.getElementById('remote-video');
 const statusMsg = document.getElementById('status-msg');
-const videoInfoText = document.getElementById('video-info-text'); // Nuevo elemento para mostrar info
+const videoInfoText = document.getElementById('video-info-text');
+const liveLocationSelector = document.getElementById('live-location-selector'); // El nuevo selector
 
 // --- DEBUG EN PANTALLA ---
 const debugBox = document.createElement('div');
@@ -20,8 +21,12 @@ function log(msg) {
 // --- CONFIGURACIÓN ---
 let peer; 
 let localStream;
-// CAMBIAMOS A V7 para asegurar que carguen los cambios nuevos
-const APP_PREFIX = "dogland-ios-v7-"; 
+// Variables globales para mantener el estado actual
+let currentPetName = "";
+let currentSpecies = "";
+let currentLocation = "";
+
+const APP_PREFIX = "dogland-ios-v8-"; // Subimos versión
 
 const peerConfig = {
     debug: 2,
@@ -57,7 +62,7 @@ function showVideoScreen(initialLabel) {
     viewerForm.classList.add('hidden');
     menuSection.classList.add('hidden');
     videoScreen.classList.remove('hidden');
-    videoInfoText.innerText = initialLabel;
+    videoInfoText.innerHTML = initialLabel; // Usamos innerHTML para permitir saltos de línea
 }
 
 function cleanId(input) {
@@ -69,19 +74,24 @@ function startCameraMode() {
     const rawInput = document.getElementById('reg-pet-id').value;
     const cleanName = cleanId(rawInput);
     
-    // Capturamos los nuevos valores
-    const speciesVal = document.getElementById('reg-species').value;
-    const locationVal = document.getElementById('reg-location').value;
+    // Guardamos datos en variables globales
+    currentPetName = cleanName;
+    currentSpecies = document.getElementById('reg-species').value;
+    currentLocation = document.getElementById('reg-location').value;
     
     if (!cleanName) return alert("Ingresa un nombre válido.");
 
     const fullId = APP_PREFIX + cleanName;
     
-    // Mostramos en la pantalla de la cámara dónde estamos transmitiendo
-    showVideoScreen(`${cleanName} (${locationVal})`);
-    log("Iniciando sistema iOS...");
+    // 1. Configurar UI de la Cámara
+    // Mostramos el selector de cambio de ubicación y ponemos el valor actual
+    liveLocationSelector.classList.remove('hidden');
+    liveLocationSelector.value = currentLocation;
+    
+    showVideoScreen(`${cleanName} (${currentSpecies}) <br> <span style="font-size:0.8em">📍 ${currentLocation}</span>`);
+    log("Iniciando cámara...");
 
-    // 1. Solicitar Cámara
+    // 2. Solicitar Hardware
     navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }, 
         audio: true 
@@ -89,7 +99,7 @@ function startCameraMode() {
     .then(stream => {
         localStream = stream;
         remoteVideo.srcObject = stream;
-        remoteVideo.muted = true; 
+        remoteVideo.muted = true; // Mute local para evitar eco
         remoteVideo.setAttribute("playsinline", true);
         remoteVideo.play().catch(e => log("Local play error: " + e));
 
@@ -98,36 +108,24 @@ function startCameraMode() {
         peer = new Peer(fullId, peerConfig);
 
         peer.on('open', (id) => {
-            statusMsg.innerText = "✅ EN LÍNEA: " + cleanName;
+            statusMsg.innerText = "✅ TRANSMITIENDO: " + cleanName;
             statusMsg.style.color = "#0f0";
-            log(`Registrado: ${cleanName} en ${locationVal}`);
+            log(`Registrado: ${cleanName}`);
         });
 
-        // 2. Manejar conexiones de DATOS (Texto)
+        // Manejo de Conexiones de Datos (Para enviar info)
         peer.on('connection', (conn) => {
             log("🔗 Visor conectado a datos.");
-            // Apenas se conecten, les enviamos la info de ubicación y especie
             conn.on('open', () => {
-                conn.send({
-                    type: 'info',
-                    petName: cleanName,
-                    species: speciesVal,
-                    location: locationVal
-                });
-                log("📤 Datos de ubicación enviados.");
+                // Enviar info actual apenas se conecten
+                sendInfo(conn);
             });
         });
 
-        // 3. Manejar llamadas de VIDEO
+        // Manejo de llamadas de Video
         peer.on('call', (call) => {
-            log("📞 Llamada entrante...");
-            statusMsg.innerText = "Transmitiendo a Dueño...";
+            log("📞 Enviando video...");
             call.answer(localStream);
-            
-            call.on('close', () => {
-                statusMsg.innerText = "✅ EN LÍNEA (Esperando)";
-                log("Visor desconectado.");
-            });
         });
 
         peer.on('error', (err) => {
@@ -135,10 +133,6 @@ function startCameraMode() {
             if(err.type === 'unavailable-id') {
                 alert("El nombre '" + cleanName + "' ya está en uso.");
                 uiGoBack();
-            }
-            if(err.type === 'network' || err.type === 'disconnected') {
-                statusMsg.innerText = "Reconectando red...";
-                peer.reconnect();
             }
         });
     })
@@ -148,6 +142,40 @@ function startCameraMode() {
     });
 }
 
+// --- NUEVA FUNCIÓN: ACTUALIZAR UBICACIÓN EN VIVO ---
+function updateLiveLocation() {
+    // 1. Obtener el nuevo valor del selector
+    const newLoc = liveLocationSelector.value;
+    currentLocation = newLoc; // Actualizar variable global
+
+    // 2. Actualizar mi propia pantalla
+    videoInfoText.innerHTML = `${currentPetName} (${currentSpecies}) <br> <span style="font-size:0.8em">📍 ${currentLocation}</span>`;
+    log("Cambio de ubicación: " + currentLocation);
+
+    // 3. Enviar la nueva info a TODOS los conectados
+    if (peer && peer.connections) {
+        // peer.connections es un objeto donde las claves son los IDs de los conectados
+        Object.values(peer.connections).forEach(connections => {
+            connections.forEach(conn => {
+                if (conn.open) {
+                    sendInfo(conn);
+                }
+            });
+        });
+    }
+}
+
+// Función auxiliar para enviar el objeto de datos
+function sendInfo(conn) {
+    conn.send({
+        type: 'info',
+        petName: currentPetName,
+        species: currentSpecies,
+        location: currentLocation
+    });
+}
+
+
 // --- MODO VISOR (RECEPTOR) ---
 function startViewerMode() {
     const rawInput = document.getElementById('view-pet-id').value;
@@ -156,6 +184,10 @@ function startViewerMode() {
     if (!cleanName) return alert("Ingresa el nombre a buscar.");
 
     const targetId = APP_PREFIX + cleanName;
+    
+    // Aseguramos que el selector esté OCULTO para el dueño
+    liveLocationSelector.classList.add('hidden');
+    
     showVideoScreen("Buscando: " + cleanName + "...");
     log("Buscando cámara...");
 
@@ -165,25 +197,25 @@ function startViewerMode() {
         log("Conectado como Visor.");
         statusMsg.innerText = "Contactando cámara...";
 
-        // 1. Conectar canal de DATOS para recibir ubicación/especie
+        // 1. Conectar canal de DATOS
         const conn = peer.connect(targetId);
 
         conn.on('open', () => {
             log("🔗 Canal de datos abierto.");
         });
 
+        // AQUÍ RECIBIMOS LAS ACTUALIZACIONES DE UBICACIÓN
         conn.on('data', (data) => {
             if(data.type === 'info') {
-                // ACTUALIZAR LA PANTALLA CON LA INFO RECIBIDA
-                videoInfoText.innerHTML = `${data.petName} | ${data.species} <br><span style="font-size:0.8em; opacity:0.9">📍 ${data.location}</span>`;
-                log("📥 Info recibida: " + data.location);
+                videoInfoText.innerHTML = `${data.petName} (${data.species}) <br><span style="font-size:0.8em; opacity:0.9; color: #FFCCBC;">📍 ${data.location}</span>`;
+                log("📥 Ubicación actualizada: " + data.location);
             }
         });
 
         // 2. Iniciar llamada de VIDEO
         const canvas = document.createElement('canvas');
         canvas.width = 1; canvas.height = 1;
-        const fakeStream = canvas.captureStream(10);
+        const fakeStream = canvas.captureStream(10); // Truco para que iOS active audio
 
         const call = peer.call(targetId, fakeStream);
 
@@ -216,12 +248,6 @@ function startViewerMode() {
             log("Error llamada: " + err);
             statusMsg.innerText = "Corte de transmisión.";
         });
-        
-        setTimeout(() => {
-            if(statusMsg.innerText.includes("Contactando")) {
-                statusMsg.innerText = "Sin respuesta. Verifica el ID.";
-            }
-        }, 6000);
     });
 
     peer.on('error', (err) => {
