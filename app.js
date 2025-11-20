@@ -5,24 +5,23 @@ const viewerForm = document.getElementById('viewer-form');
 const videoScreen = document.getElementById('video-screen');
 const remoteVideo = document.getElementById('remote-video');
 const statusMsg = document.getElementById('status-msg');
-const petNameLabel = document.getElementById('video-pet-name');
+const videoInfoText = document.getElementById('video-info-text'); // Nuevo elemento para mostrar info
 
-// --- DEBUG EN PANTALLA (Útil para ver errores en el iPhone) ---
+// --- DEBUG EN PANTALLA ---
 const debugBox = document.createElement('div');
 debugBox.style.cssText = "position:fixed; bottom:0; left:0; width:100%; height:100px; background:rgba(0,0,0,0.8); color:#0f0; font-size:10px; overflow-y:scroll; z-index:9999; pointer-events:none; padding:5px; display:none;";
 document.body.appendChild(debugBox);
 
 function log(msg) {
     const time = new Date().toLocaleTimeString();
-    // console.log(`[${time}] ${msg}`); // Descomentar si quieres ver en consola PC
     debugBox.innerHTML = `<div>[${time}] ${msg}</div>` + debugBox.innerHTML;
 }
 
 // --- CONFIGURACIÓN ---
 let peer; 
 let localStream;
-// CAMBIAMOS A V6 para evitar caché viejo
-const APP_PREFIX = "dogland-ios-v6-"; 
+// CAMBIAMOS A V7 para asegurar que carguen los cambios nuevos
+const APP_PREFIX = "dogland-ios-v7-"; 
 
 const peerConfig = {
     debug: 2,
@@ -53,75 +52,88 @@ function uiGoBack() {
     location.reload(); 
 }
 
-function showVideoScreen(label) {
+function showVideoScreen(initialLabel) {
     registerForm.classList.add('hidden');
     viewerForm.classList.add('hidden');
     menuSection.classList.add('hidden');
     videoScreen.classList.remove('hidden');
-    petNameLabel.innerText = label;
+    videoInfoText.innerText = initialLabel;
 }
 
-// --- FUNCION PARA LIMPIAR ID (Clave para iPhone) ---
 function cleanId(input) {
-    // Quita espacios y fuerza minúsculas
     return input.trim().toLowerCase().replace(/\s/g, '');
 }
 
-// --- MODO CÁMARA (El iPhone transmitiendo) ---
+// --- MODO CÁMARA (TRANSMISOR) ---
 function startCameraMode() {
     const rawInput = document.getElementById('reg-pet-id').value;
     const cleanName = cleanId(rawInput);
     
+    // Capturamos los nuevos valores
+    const speciesVal = document.getElementById('reg-species').value;
+    const locationVal = document.getElementById('reg-location').value;
+    
     if (!cleanName) return alert("Ingresa un nombre válido.");
 
     const fullId = APP_PREFIX + cleanName;
-    showVideoScreen("Cámara: " + cleanName);
+    
+    // Mostramos en la pantalla de la cámara dónde estamos transmitiendo
+    showVideoScreen(`${cleanName} (${locationVal})`);
     log("Iniciando sistema iOS...");
 
-    // 1. Solicitar Cámara (Debe ser inmediato al click en iOS)
+    // 1. Solicitar Cámara
     navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }, 
         audio: true 
     })
     .then(stream => {
         localStream = stream;
-        
-        // Fix iOS: Video local mudo y playsinline
         remoteVideo.srcObject = stream;
         remoteVideo.muted = true; 
-        remoteVideo.setAttribute("playsinline", true); // Doble seguridad
+        remoteVideo.setAttribute("playsinline", true);
         remoteVideo.play().catch(e => log("Local play error: " + e));
 
         log("Cámara OK. Conectando a servidor...");
 
-        // 2. Iniciar Peer
         peer = new Peer(fullId, peerConfig);
 
         peer.on('open', (id) => {
             statusMsg.innerText = "✅ EN LÍNEA: " + cleanName;
             statusMsg.style.color = "#0f0";
-            log("ID REGISTRADO: " + cleanName);
-            log("No apagues la pantalla.");
+            log(`Registrado: ${cleanName} en ${locationVal}`);
         });
 
-        // 3. Contestar llamadas
+        // 2. Manejar conexiones de DATOS (Texto)
+        peer.on('connection', (conn) => {
+            log("🔗 Visor conectado a datos.");
+            // Apenas se conecten, les enviamos la info de ubicación y especie
+            conn.on('open', () => {
+                conn.send({
+                    type: 'info',
+                    petName: cleanName,
+                    species: speciesVal,
+                    location: locationVal
+                });
+                log("📤 Datos de ubicación enviados.");
+            });
+        });
+
+        // 3. Manejar llamadas de VIDEO
         peer.on('call', (call) => {
-            log("📞 Conectando con visor...");
-            statusMsg.innerText = "Transmitiendo...";
+            log("📞 Llamada entrante...");
+            statusMsg.innerText = "Transmitiendo a Dueño...";
             call.answer(localStream);
             
             call.on('close', () => {
                 statusMsg.innerText = "✅ EN LÍNEA (Esperando)";
                 log("Visor desconectado.");
             });
-            
-            call.on('error', (e) => log("Error llamada: " + e));
         });
 
         peer.on('error', (err) => {
             log("ERROR: " + err.type);
             if(err.type === 'unavailable-id') {
-                alert("El nombre '" + cleanName + "' ya está en uso. Usa otro.");
+                alert("El nombre '" + cleanName + "' ya está en uso.");
                 uiGoBack();
             }
             if(err.type === 'network' || err.type === 'disconnected') {
@@ -129,22 +141,14 @@ function startCameraMode() {
                 peer.reconnect();
             }
         });
-
-        // Fix iOS: Reconexión si se minimiza
-        peer.on('disconnected', () => {
-            log("Desconectado. Intentando reconectar...");
-            peer.reconnect();
-        });
-
     })
     .catch(err => {
         alert("Error al acceder a cámara: " + err.message);
-        log("Camera Error: " + err);
         uiGoBack();
     });
 }
 
-// --- MODO VISOR (Viendo desde Windows/Android) ---
+// --- MODO VISOR (RECEPTOR) ---
 function startViewerMode() {
     const rawInput = document.getElementById('view-pet-id').value;
     const cleanName = cleanId(rawInput);
@@ -152,45 +156,54 @@ function startViewerMode() {
     if (!cleanName) return alert("Ingresa el nombre a buscar.");
 
     const targetId = APP_PREFIX + cleanName;
-    showVideoScreen("Buscando: " + cleanName);
+    showVideoScreen("Buscando: " + cleanName + "...");
     log("Buscando cámara...");
 
-    // Visor con ID aleatorio
     peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
         log("Conectado como Visor.");
-        statusMsg.innerText = "Llamando a " + cleanName + "...";
+        statusMsg.innerText = "Contactando cámara...";
 
-        // Crear Stream vacío para engañar al navegador (Truco iOS)
+        // 1. Conectar canal de DATOS para recibir ubicación/especie
+        const conn = peer.connect(targetId);
+
+        conn.on('open', () => {
+            log("🔗 Canal de datos abierto.");
+        });
+
+        conn.on('data', (data) => {
+            if(data.type === 'info') {
+                // ACTUALIZAR LA PANTALLA CON LA INFO RECIBIDA
+                videoInfoText.innerHTML = `${data.petName} | ${data.species} <br><span style="font-size:0.8em; opacity:0.9">📍 ${data.location}</span>`;
+                log("📥 Info recibida: " + data.location);
+            }
+        });
+
+        // 2. Iniciar llamada de VIDEO
         const canvas = document.createElement('canvas');
         canvas.width = 1; canvas.height = 1;
         const fakeStream = canvas.captureStream(10);
 
-        // Llamamos a la cámara
         const call = peer.call(targetId, fakeStream);
 
         if(!call) {
-            log("Error crítico: No se pudo iniciar llamada.");
+            log("Error: No se pudo llamar.");
             return;
         }
 
         call.on('stream', (remoteStream) => {
-            log("✅ ¡SEÑAL RECIBIDA!");
+            log("✅ VIDEO RECIBIDO");
             statusMsg.classList.add('hidden');
             
             remoteVideo.srcObject = remoteStream;
             remoteVideo.setAttribute("playsinline", true);
             
-            // Promesa de reproducción segura
             const playPromise = remoteVideo.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    log("Autoplay bloqueado. Toca la pantalla.");
                     statusMsg.innerText = "TOCA LA PANTALLA PARA VER";
                     statusMsg.classList.remove('hidden');
-                    
-                    // Botón de emergencia
                     document.body.addEventListener('click', () => {
                         remoteVideo.play();
                         statusMsg.classList.add('hidden');
@@ -200,22 +213,20 @@ function startViewerMode() {
         });
 
         call.on('error', (err) => {
-            log("Error en llamada: " + err);
+            log("Error llamada: " + err);
             statusMsg.innerText = "Corte de transmisión.";
         });
         
-        // Timeout manual por si PeerJS no responde el error
         setTimeout(() => {
-            if(statusMsg.innerText.includes("Llamando")) {
-                statusMsg.innerText = "No responde. Verifica que el iPhone tenga la pantalla encendida.";
+            if(statusMsg.innerText.includes("Contactando")) {
+                statusMsg.innerText = "Sin respuesta. Verifica el ID.";
             }
         }, 6000);
     });
 
     peer.on('error', (err) => {
-        log("Error Peer: " + err.type);
         if(err.type === 'peer-unavailable') {
-            statusMsg.innerText = "Cámara no encontrada. Revisa el nombre.";
+            statusMsg.innerText = "Cámara no encontrada.";
         }
     });
 }
