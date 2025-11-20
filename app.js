@@ -10,13 +10,12 @@ const petNameLabel = document.getElementById('video-pet-name');
 let peer; // Objeto de conexión
 let localStream; // Tu video (si eres cámara)
 
-// CONFIGURACIÓN IMPORTANTE
-// Usamos un prefijo para evitar chocar con otros usuarios de PeerJS
-const APP_PREFIX = "dogland-app-v2-"; 
+// Prefijo para evitar que se mezclen con otros usuarios de la librería
+const APP_PREFIX = "dogland-v3-"; 
 
-// Configuración de servidores STUN (ayudan a atravesar el router)
+// Configuración de servidores para atravesar routers
 const peerConfig = {
-    debug: 2, // Muestra errores en la consola
+    debug: 2,
     config: {
         'iceServers': [
             { url: 'stun:stun.l.google.com:19302' },
@@ -29,17 +28,8 @@ const peerConfig = {
 function uiShowRegister() { menuSection.classList.add('hidden'); registerForm.classList.remove('hidden'); }
 function uiShowViewer() { menuSection.classList.add('hidden'); viewerForm.classList.remove('hidden'); }
 function uiGoBack() { 
-    registerForm.classList.add('hidden'); 
-    viewerForm.classList.add('hidden'); 
-    menuSection.classList.remove('hidden'); 
-    
-    // Si había una conexión previa, la cerramos limpiamente
     if(peer) { peer.destroy(); peer = null; }
-    if(localStream) { 
-        localStream.getTracks().forEach(track => track.stop()); 
-        localStream = null; 
-    }
-    location.reload(); // Recargar para limpiar memoria
+    location.reload(); 
 }
 
 function showVideoScreen(label) {
@@ -53,52 +43,51 @@ function showVideoScreen(label) {
 /* --- MODO CÁMARA (TRANSMISOR) --- */
 function startCameraMode() {
     const petIdInput = document.getElementById('reg-pet-id').value.trim();
-    if (!petIdInput) return alert("Ingresa un ID para la mascota.");
+    if (!petIdInput) return alert("Ingresa un ID.");
 
-    const fullId = APP_PREFIX + petIdInput.toLowerCase(); // ID único
+    const fullId = APP_PREFIX + petIdInput.toLowerCase();
 
     showVideoScreen("Cámara: " + petIdInput);
     statusMsg.innerText = "Iniciando cámara...";
 
-    // 1. Acceder a la cámara
+    // 1. Obtener cámara
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: true })
         .then(stream => {
             localStream = stream;
             remoteVideo.srcObject = stream;
             remoteVideo.muted = true; // Mute local
-            remoteVideo.play(); // Asegurar reproducción local
+            remoteVideo.play();
 
-            statusMsg.innerText = "Conectando al servidor...";
+            statusMsg.innerText = "Conectando a la red...";
 
-            // 2. Crear conexión Peer con el ID específico
+            // 2. Crear ID en la nube
             peer = new Peer(fullId, peerConfig);
 
             peer.on('open', (id) => {
-                statusMsg.innerText = "✅ EN LÍNEA. ID: " + petIdInput;
-                console.log('Cámara lista con ID: ' + id);
+                statusMsg.innerText = "✅ LÍNEA. ID: " + petIdInput;
+                console.log('Cámara lista: ' + id);
             });
 
-            // 3. Contestador Automático
-            peer.on('call', (call) => {
-                console.log("¡Alguien está llamando!");
-                statusMsg.innerText = "Conectando con dueño...";
+            // 3. ESPERAR SEÑAL DEL DUEÑO (Data Connection)
+            peer.on('connection', (conn) => {
+                console.log("Dueño conectado...");
                 
-                // Respondemos con nuestro video
-                call.answer(localStream); 
-                
-                // Monitorear si se cierra
-                call.on('close', () => {
-                    statusMsg.innerText = "✅ EN LÍNEA. Esperando...";
+                conn.on('open', () => {
+                    statusMsg.innerText = "Enviando video al dueño...";
+                    // AQUI ESTA EL TRUCO: La cámara llama al dueño
+                    const call = peer.call(conn.peer, localStream);
+                    
+                    call.on('close', () => {
+                        statusMsg.innerText = "✅ LÍNEA. Esperando...";
+                    });
                 });
             });
 
             peer.on('error', (err) => {
                 console.error(err);
                 if(err.type === 'unavailable-id') {
-                    alert("El ID '" + petIdInput + "' ya está en uso. Elige otro.");
+                    alert("El ID ya está en uso.");
                     uiGoBack();
-                } else {
-                    statusMsg.innerText = "Error: " + err.type;
                 }
             });
         })
@@ -116,59 +105,49 @@ function startViewerMode() {
     const targetId = APP_PREFIX + petIdInput.toLowerCase();
 
     showVideoScreen("Viendo a: " + petIdInput);
-    statusMsg.innerText = "Buscando señal...";
+    statusMsg.innerText = "Conectando...";
 
-    // Crear Peer como visor (sin ID específico)
+    // Crear Peer como visor (ID aleatorio)
     peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
         console.log("Soy el visor " + id);
-        statusMsg.innerText = "Llamando a la cámara...";
-        
-        // Iniciamos la llamada
-        // Importante: Enviamos null porque el visor no transmite video
-        const call = peer.call(targetId, null); 
+        statusMsg.innerText = "Solicitando video...";
 
-        if (!call) {
-            statusMsg.innerText = "No se pudo iniciar la llamada.";
-            return;
-        }
+        // 1. Conectamos por DATOS primero (Chat)
+        const conn = peer.connect(targetId);
 
-        // Manejar la respuesta
+        conn.on('open', () => {
+            console.log("Conectado a la cámara. Esperando video...");
+            statusMsg.innerText = "Esperando transmisión...";
+        });
+
+        conn.on('error', (err) => {
+            statusMsg.innerText = "No se encuentra la cámara.";
+        });
+    });
+
+    // 2. ESPERAR LA LLAMADA DE VUELTA DE LA CÁMARA
+    peer.on('call', (call) => {
+        console.log("Recibiendo video...");
+        statusMsg.classList.add('hidden');
+
+        // Contestamos sin enviar video (null es válido al contestar)
+        call.answer(null); 
+
         call.on('stream', (remoteStream) => {
-            console.log("¡Video recibido!");
-            statusMsg.classList.add('hidden');
-            
             remoteVideo.srcObject = remoteStream;
-            
-            // INTENTO FORZADO DE REPRODUCCIÓN (Solución a pantalla negra)
-            remoteVideo.play().catch(error => {
-                console.log("Autoplay bloqueado, intentando mute...", error);
-                remoteVideo.muted = true; // Si falla, muteamos y probamos de nuevo
-                remoteVideo.play();
-            });
+            remoteVideo.play().catch(e => console.log("Autoplay error", e));
         });
 
-        call.on('error', (err) => {
-            console.error("Error en llamada:", err);
-            statusMsg.innerText = "Error en transmisión.";
-        });
-        
         call.on('close', () => {
-            statusMsg.innerText = "La cámara se desconectó.";
-            statusMsg.classList.remove('hidden');
+            alert("Transmisión finalizada");
+            uiGoBack();
         });
-
-        // Esperar 5 segundos, si no conecta, avisar
-        setTimeout(() => {
-            if(remoteVideo.paused && !remoteVideo.srcObject) {
-                statusMsg.innerText = "No responde. Verifica que la cámara esté encendida y el ID sea correcto.";
-            }
-        }, 5000);
     });
 
     peer.on('error', (err) => {
-        console.error(err);
-        statusMsg.innerText = "Error de conexión: " + err.type;
+        console.log(err);
+        statusMsg.innerText = "Error: " + err.type;
     });
 }
