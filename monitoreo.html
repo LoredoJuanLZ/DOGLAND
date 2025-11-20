@@ -24,16 +24,31 @@
         <div class="monitoreo-container" id="menu-selection">
             <h1>Centro de Monitoreo</h1>
             <p class="subtitle">¿Qué función cumple este dispositivo?</p>
+            
             <div class="card-grid">
                 <div class="access-card live-view">
-                    <div class="card-icon">📺</div>
+                    <div class="card-icon animated-icon-container">
+                        <div class="monitor-anim">
+                            <div class="monitor-screen">
+                                <div class="play-btn">▶</div>
+                            </div>
+                            <div class="monitor-stand"></div>
+                        </div>
+                    </div>
                     <h2>Soy el Dueño</h2>
                     <p>Quiero ver a mi mascota.</p>
                     <button class="btn-main-monitoreo" onclick="uiShowViewer()">Ver Cámara</button>
                 </div>
 
                 <div class="access-card registration">
-                    <div class="card-icon">📹</div>
+                    <div class="card-icon animated-icon-container">
+                         <div class="camera-anim">
+                            <div class="cam-body">
+                                <div class="cam-lens"></div>
+                                <div class="cam-rec-dot"></div>
+                            </div>
+                        </div>
+                    </div>
                     <h2>Soy la Cámara</h2>
                     <p>Usar este dispositivo como vigilancia.</p>
                     <button class="btn-secondary-monitoreo" onclick="uiShowRegister()">Iniciar Cámara</button>
@@ -43,9 +58,28 @@
 
         <div class="form-container hidden" id="register-form">
             <h2>📹 Configurar Cámara</h2>
-            <p>Crea un ID único para tu mascota (sin espacios):</p>
+            
+            <p>1. ID de la Mascota (sin espacios):</p>
             <input type="text" id="reg-pet-id" placeholder="Ej: firulais123" class="input-field">
-            <p style="font-size: 0.8em; color: #666;">*Usa un nombre único para que nadie más entre.</p>
+            
+            <p>2. Especie:</p>
+            <select id="reg-species" class="input-field">
+                <option value="Perro">🐶 Perro</option>
+                <option value="Gato">🐱 Gato</option>
+                <option value="Otro">🐾 Otro</option>
+            </select>
+
+            <p>3. Ubicación Actual:</p>
+            <select id="reg-location" class="input-field">
+                <option value="Área de Juegos (Perros)">🎾 Juegos Perros</option>
+                <option value="Área de Juegos (Gatos)">🧶 Juegos Gatos</option>
+                <option value="Área de Baño">🛁 Área de Baño</option>
+                <option value="Consultorio Veterinario">🩺 Veterinario</option>
+                <option value="Descanso / Jaulas">💤 Zona de Descanso</option>
+            </select>
+
+            <p style="font-size: 0.8em; color: #666; margin-top: 10px;">*Esta información se mostrará en el video.</p>
+
             <div class="button-group">
                 <button class="btn-secondary-monitoreo" onclick="uiGoBack()">Cancelar</button>
                 <button class="btn-main-monitoreo" onclick="startCameraMode()">🔴 Transmitir</button>
@@ -64,11 +98,15 @@
 
         <div class="video-container hidden" id="video-screen">
             <div class="video-header">
-                <span class="live-indicator">🔴 EN VIVO</span>
-                <span id="video-pet-name">Mascota</span>
+                <div>
+                    <span class="live-indicator">🔴 EN VIVO</span>
+                    <span id="video-info-text" style="margin-left: 10px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Conectando...</span>
+                </div>
                 <button class="btn-close" onclick="location.reload()">✖ Salir</button>
             </div>
+            
             <video id="remote-video" autoplay playsinline muted></video>
+            
             <p id="status-msg">Inicializando...</p>
         </div>
 
