@@ -1,14 +1,14 @@
 /* Variables de Colores - PALETA "COFFEE & MILK" */
 :root {
-    --color-primary: #6F4E37;      /* Café Grano (Más neutro y elegante, menos naranja) */
-    --color-secondary: #D7CCC8;    /* Café Latte muy suave (para bordes sutiles) */
-    --color-background: #FFFFFF;   /* Blanco Puro (Para limpiar el diseño) */
+    --color-primary: #6F4E37;      /* Café Grano */
+    --color-secondary: #D7CCC8;    /* Café Latte suave */
+    --color-background: #FFFFFF;   /* Blanco Puro */
     
     /* El color clave: Un tono arena/lino grisáceo. NO amarillo. */
     --color-hero-bg: #F2EBE5;      
     --color-navbar-bg: #F2EBE5;    
     
-    --color-text-dark: #3E2723;    /* Café muy oscuro (casi negro) para texto */
+    --color-text-dark: #3E2723;    /* Café muy oscuro */
     --color-text-light: #FFFFFF;   /* Blanco texto */
     --color-accent: #8D6E63;       /* Café medio suave */
 }
@@ -34,8 +34,8 @@ a {
 
 /* --- Estilos del Header/Navegación --- */
 .header {
-    padding-bottom: 40px;
-    border-bottom: 1px solid var(--color-secondary); /* Borde más sutil */
+    padding-bottom: 0px; /* Ajustado para quitar espacio extra si es necesario */
+    background-color: var(--color-navbar-bg);
 }
 
 .navbar {
@@ -44,19 +44,26 @@ a {
     justify-content: space-between;
     align-items: center;
     padding: 15px 5%;
-    flex-wrap: wrap;
+    position: relative; /* Necesario para posicionar el menú móvil */
+    z-index: 1000;
 }
 
 .logo {
     font-size: 1.8em;
     font-weight: 700;
-    color: var(--color-primary); /* Logo en color café */
+    color: var(--color-primary);
+}
+
+/* Contenedor del menú (links + botón) */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    flex-wrap: wrap;
 }
 
 .nav-links li {
@@ -87,6 +94,23 @@ a {
     color: var(--color-text-light);
 }
 
+/* Estilos del icono Hamburguesa (Oculto en escritorio) */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
 /* --- Estilos del Hero (Encabezado Principal) --- */
 .hero {
     background-color: var(--color-hero-bg); 
@@ -97,6 +121,7 @@ a {
     gap: 40px;
     flex-wrap: wrap;
     text-align: center;
+    border-bottom: 1px solid var(--color-secondary);
 }
 
 .hero-content {
@@ -114,7 +139,7 @@ a {
 .hero p {
     font-size: 1.1em;
     margin-bottom: 30px;
-    color: #5D4037; /* Texto ligeramente más suave para lectura */
+    color: #5D4037; 
 }
 
 .hero-image {
@@ -122,7 +147,7 @@ a {
     height: 300px;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(111, 78, 55, 0.15); /* Sombra café muy suave */
+    box-shadow: 0 10px 20px rgba(111, 78, 55, 0.15); 
 }
 
 .hero-image img {
@@ -145,7 +170,7 @@ a {
 }
 
 .btn-main:hover {
-    background-color: #4E342E; /* Café más oscuro al pasar el mouse */
+    background-color: #4E342E; 
 }
 
 .btn-secondary {
@@ -165,7 +190,7 @@ a {
 
 /* --- Estilos de la Sección de Monitoreo --- */
 .feature-section {
-     background-color: var(--color-hero-bg); 
+    background-color: var(--color-background); /* Cambiado a blanco para contraste */
     padding: 60px 5%;
     text-align: center;
 }
@@ -176,27 +201,6 @@ a {
     margin-bottom: 40px;
 }
 
-.feature-card {
-    background-color: var(--color-secondary);
-    padding: 40px;
-    border-radius: 10px;
-    max-width: 600px;
-    margin: 0 auto;
-    border: 1px solid var(--color-hero-bg); /* Borde muy sutil */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.feature-icon {
-    font-size: 3em;
-    margin-bottom: 15px;
-}
-
-.feature-card h3 {
-    margin-bottom: 10px;
-    color: var(--color-text-dark);
-}
-
-/* --- Estilos del Footer --- */
 .footer {
     background-color: var(--color-text-dark);
     color: var(--color-secondary);
@@ -205,52 +209,19 @@ a {
     margin-top: 40px;
 }
 
-/* --- Media Queries (Sin cambios funcionales, solo colores heredados) --- */
-@media (max-width: 992px) {
-    .navbar { justify-content: center; text-align: center; }
-    .nav-links { margin-top: 15px; justify-content: center; width: 100%; }
-    .nav-links li { margin: 0 15px 10px 15px; }
-    .btn-login { width: 100%; margin-top: 15px; padding: 10px; }
-    .hero { flex-direction: column; text-align: center; padding: 40px 5%; }
-    .hero-content { max-width: 100%; text-align: center; }
-    .hero h1 { font-size: 2.2em; }
-    .hero p { font-size: 1em; }
-    .hero-image { width: 80%; height: 250px; margin-top: 30px; }
-    .feature-section { padding: 40px 5%; }
-}
-
-@media (max-width: 768px) {
-    .logo { font-size: 1.5em; width: 100%; margin-bottom: 15px; }
-    .nav-links { flex-direction: column; align-items: center; }
-    .nav-links li { margin: 10px 0; }
-    .hero h1 { font-size: 1.8em; }
-    .hero-image { width: 95%; height: 200px; }
-    .feature-section h2 { font-size: 1.8em; }
-}
-
-@media (max-width: 480px) {
-    .hero h1 { font-size: 1.5em; }
-    .hero p { font-size: 0.9em; }
-    .btn-main, .btn-secondary { width: 90%; padding: 10px; margin-top: 10px; }
-}
-
-/* --- NUEVOS ESTILOS PARA LA TARJETA DE CÁMARA (Añadir al final de styles.css) --- */
-
+/* --- NUEVOS ESTILOS PARA LA TARJETA DE CÁMARA --- */
 .camera-card-container {
-    /* Mantenemos tus colores base */
     background-color: var(--color-secondary);
     border: 1px solid var(--color-hero-bg);
     box-shadow: 0 10px 30px rgba(111, 78, 55, 0.15);
-    
-    border-radius: 20px; /* Bordes más redondeados */
+    border-radius: 20px;
     max-width: 700px;
     margin: 0 auto;
-    overflow: hidden; /* Para que nada se salga del contenedor */
+    overflow: hidden;
 }
 
-/* El cuerpo visual de la cámara */
 .camera-body {
-    background: linear-gradient(145deg, #5D4037, #3E2723); /* Gradiente café oscuro metálico */
+    background: linear-gradient(145deg, #5D4037, #3E2723);
     padding: 30px;
     position: relative;
     display: flex;
@@ -259,20 +230,18 @@ a {
     border-bottom: 4px solid #2d1b18;
 }
 
-/* El lente de la cámara */
 .camera-lens {
     width: 120px;
     height: 120px;
-    background: #1a1a1a; /* Fondo negro del lente */
+    background: #1a1a1a;
     border-radius: 50%;
-    border: 8px solid #8D6E63; /* Anillo metálico exterior */
+    border: 8px solid #8D6E63;
     box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(0,0,0,0.3);
     position: relative;
-    overflow: hidden; /* Para cortar el brillo y la línea de escaneo */
+    overflow: hidden;
     margin-bottom: 20px;
 }
 
-/* Reflejo en el lente */
 .lens-reflection {
     position: absolute;
     top: 10%;
@@ -284,19 +253,17 @@ a {
     filter: blur(2px);
 }
 
-/* Animación de escaneo */
 .scanning-line {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 3px;
-    background: rgba(141, 110, 99, 0.7); /* Color café claro/rojizo */
+    background: rgba(141, 110, 99, 0.7);
     box-shadow: 0 0 10px rgba(141, 110, 99, 1);
     animation: scan 3s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
-/* Indicadores (Foco rojo y texto) */
 .camera-indicators {
     display: flex;
     align-items: center;
@@ -305,7 +272,6 @@ a {
     border-radius: 20px;
 }
 
-/* El punto rojo parpadeante */
 .rec-dot {
     width: 12px;
     height: 12px;
@@ -323,13 +289,11 @@ a {
     letter-spacing: 1px;
 }
 
-/* El contenido de texto original */
 .camera-content {
     padding: 30px;
     text-align: center;
 }
 
-/* --- Animaciones --- */
 @keyframes blink {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.3; transform: scale(0.8); }
@@ -340,7 +304,86 @@ a {
     100% { top: 100%; opacity: 0.8; }
 }
 
-/* Ajuste para móviles */
+
+/* --- MEDIA QUERIES (RESPONSIVIDAD) --- */
+
+/* Tablet y Móvil (Menú Hamburguesa) */
+@media (max-width: 992px) {
+    /* Mostrar botón hamburguesa */
+    .hamburger {
+        display: flex;
+        z-index: 2000; /* Encima de todo */
+    }
+
+    /* Estilo del menú desplegable móvil */
+    .nav-menu {
+        position: absolute; /* Flota sobre el contenido */
+        top: 100%; /* Justo debajo de la barra de navegación */
+        left: -100%; /* Oculto a la izquierda inicialmente */
+        flex-direction: column;
+        background-color: var(--color-secondary); /* Fondo café latte */
+        width: 100%;
+        text-align: center;
+        transition: 0.4s ease-in-out; /* Animación suave */
+        box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        padding: 30px 0;
+        gap: 25px;
+    }
+
+    /* Clase que activa JS para mostrar el menú */
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-links li {
+        margin: 15px 0;
+    }
+    
+    /* Botón Login ancho en móvil */
+    .btn-login {
+        width: 80%;
+        text-align: center;
+    }
+
+    /* Animación del icono Hamburguesa a 'X' */
+    .hamburger.active .bar:nth-child(2) {
+        opacity: 0;
+    }
+    .hamburger.active .bar:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    .hamburger.active .bar:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* Ajustes del Hero en móvil */
+    .hero { 
+        flex-direction: column; 
+        text-align: center; 
+        padding: 40px 5%; 
+    }
+    .hero-content { 
+        max-width: 100%; 
+        text-align: center; 
+    }
+    .hero h1 { font-size: 2.2em; }
+    .hero p { font-size: 1em; }
+    .hero-image { width: 80%; height: 250px; margin-top: 30px; }
+}
+
+@media (max-width: 768px) {
+    .hero h1 { font-size: 1.8em; }
+    .hero-image { width: 95%; height: 200px; }
+    .feature-section h2 { font-size: 1.8em; }
+}
+
 @media (max-width: 480px) {
     .camera-lens {
         width: 90px;
@@ -353,4 +396,6 @@ a {
     .camera-body {
         padding: 20px;
     }
+    .hero h1 { font-size: 1.5em; }
+    .btn-main, .btn-secondary { width: 90%; padding: 10px; margin-top: 10px; }
 }
