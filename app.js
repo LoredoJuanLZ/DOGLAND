@@ -1,35 +1,41 @@
 // --- ELEMENTOS DEL DOM ---
 const menuSection = document.getElementById('menu-selection');
 const registerForm = document.getElementById('register-form');
-const viewerForm = document.getElementById('viewer-form');
+const adminLoginForm = document.getElementById('admin-login-form');
+const viewerMap = document.getElementById('viewer-map');
 const videoScreen = document.getElementById('video-screen');
 const remoteVideo = document.getElementById('remote-video');
 const statusMsg = document.getElementById('status-msg');
 const videoInfoText = document.getElementById('video-info-text');
-const liveLocationSelector = document.getElementById('live-location-selector'); // El nuevo selector
+const manualInputBox = document.getElementById('manual-input-box');
+const mapStatusText = document.getElementById('map-status-text');
 
-// --- DEBUG EN PANTALLA ---
+// --- DEBUG Oculto (Opcional) ---
+// Puedes descomentar esto si necesitas ver logs en el móvil
 const debugBox = document.createElement('div');
-debugBox.style.cssText = "position:fixed; bottom:0; left:0; width:100%; height:100px; background:rgba(0,0,0,0.8); color:#0f0; font-size:10px; overflow-y:scroll; z-index:9999; pointer-events:none; padding:5px; display:none;";
+debugBox.style.cssText = "position:fixed; bottom:0; left:0; width:100%; height:0px; background:rgba(0,0,0,0.8); color:#0f0; font-size:10px; overflow:hidden; z-index:9999; pointer-events:none; padding:0px;";
 document.body.appendChild(debugBox);
 
 function log(msg) {
-    const time = new Date().toLocaleTimeString();
-    debugBox.innerHTML = `<div>[${time}] ${msg}</div>` + debugBox.innerHTML;
+    console.log(msg);
+    // const time = new Date().toLocaleTimeString();
+    // debugBox.innerHTML = `<div>[${time}] ${msg}</div>` + debugBox.innerHTML;
 }
 
 // --- CONFIGURACIÓN ---
 let peer; 
 let localStream;
-// Variables globales para mantener el estado actual
+let scanInterval; // Para detener el escaneo al salir del mapa
+
+// Estado de la sesión actual
 let currentPetName = "";
 let currentSpecies = "";
 let currentLocation = "";
 
-const APP_PREFIX = "dogland-ios-v8-"; // Subimos versión
+const APP_PREFIX = "dogland-ios-v8-"; 
 
 const peerConfig = {
-    debug: 2,
+    debug: 0, // 0 prod, 2 debug
     config: {
         'iceServers': [
             { url: 'stun:stun.l.google.com:19302' },
@@ -38,60 +44,112 @@ const peerConfig = {
     }
 };
 
+// Lista de habitaciones fijas para escanear en el mapa
+const fixedRooms = [
+    'recepcion', 'juegos', 'vet', 'bano',
+    'gato1', 'gato2', 'gato3', 'gato4', 'gato5',
+    'perroA1', 'perroA2', 'perroA3', 'perroA4', 'perroA5',
+    'perroB1', 'perroB2', 'perroB3', 'perroB4', 'perroB5'
+];
+
 // --- UI FUNCTIONS ---
-function uiShowRegister() { 
+
+function uiShowLogin() { 
     menuSection.classList.add('hidden'); 
-    registerForm.classList.remove('hidden'); 
-    debugBox.style.display = 'block'; 
+    adminLoginForm.classList.remove('hidden'); 
 }
 
-function uiShowViewer() { 
+function uiShowMap() { 
+    resetApp(); // Limpiar conexiones previas
     menuSection.classList.add('hidden'); 
-    viewerForm.classList.remove('hidden'); 
-    debugBox.style.display = 'block'; 
+    videoScreen.classList.add('hidden');
+    viewerMap.classList.remove('hidden'); 
+    
+    // INICIAR ESCANEO DE CÁMARAS ACTIVAS
+    checkActiveCameras();
+}
+
+function uiShowRegistrationForm() { 
+    adminLoginForm.classList.add('hidden'); 
+    registerForm.classList.remove('hidden'); 
 }
 
 function uiGoBack() { 
-    if(peer) { peer.destroy(); peer = null; }
-    if(localStream) { localStream.getTracks().forEach(t => t.stop()); }
+    resetApp();
     location.reload(); 
 }
 
-function showVideoScreen(initialLabel) {
-    registerForm.classList.add('hidden');
-    viewerForm.classList.add('hidden');
-    menuSection.classList.add('hidden');
-    videoScreen.classList.remove('hidden');
-    videoInfoText.innerHTML = initialLabel; // Usamos innerHTML para permitir saltos de línea
+function resetApp() {
+    if(peer) { peer.destroy(); peer = null; }
+    if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+    if(scanInterval) { clearInterval(scanInterval); }
+    remoteVideo.srcObject = null;
 }
 
 function cleanId(input) {
     return input.trim().toLowerCase().replace(/\s/g, '');
 }
 
+function toggleManualInput() {
+    manualInputBox.classList.toggle('hidden');
+}
+
+// Toggle entre Modo Fijo y Custom en el Admin
+function toggleStreamType() {
+    const type = document.querySelector('input[name="streamType"]:checked').value;
+    if(type === 'fixed') {
+        document.getElementById('fixed-room-section').classList.remove('hidden');
+        document.getElementById('custom-room-section').classList.add('hidden');
+    } else {
+        document.getElementById('fixed-room-section').classList.add('hidden');
+        document.getElementById('custom-room-section').classList.remove('hidden');
+    }
+}
+
+// --- LOGICA DE LOGIN ADMIN ---
+function checkAdminAuth() {
+    const u = document.getElementById('admin-user').value;
+    const p = document.getElementById('admin-pass').value;
+    if(u === "admin" && p === "admin123") {
+        uiShowRegistrationForm(); 
+    } else {
+        alert("Credenciales incorrectas 🚫");
+    }
+}
+
 // --- MODO CÁMARA (TRANSMISOR) ---
 function startCameraMode() {
-    const rawInput = document.getElementById('reg-pet-id').value;
-    const cleanName = cleanId(rawInput);
-    
-    // Guardamos datos en variables globales
-    currentPetName = cleanName;
-    currentSpecies = document.getElementById('reg-species').value;
-    currentLocation = document.getElementById('reg-location').value;
-    
-    if (!cleanName) return alert("Ingresa un nombre válido.");
+    const type = document.querySelector('input[name="streamType"]:checked').value;
+    let cleanName, displayName, species;
+
+    if (type === 'fixed') {
+        const select = document.getElementById('reg-room-id');
+        cleanName = select.value;
+        displayName = select.options[select.selectedIndex].text;
+        species = cleanName.includes('gato') ? '🐱' : (cleanName.includes('perro') ? '🐶' : '📹');
+    } else {
+        // Modo Custom
+        const rawName = document.getElementById('custom-pet-name').value;
+        if (!rawName) return alert("Ingresa un nombre.");
+        cleanName = cleanId(rawName);
+        displayName = rawName.toUpperCase();
+        species = document.getElementById('custom-pet-type').value;
+    }
 
     const fullId = APP_PREFIX + cleanName;
-    
-    // 1. Configurar UI de la Cámara
-    // Mostramos el selector de cambio de ubicación y ponemos el valor actual
-    liveLocationSelector.classList.remove('hidden');
-    liveLocationSelector.value = currentLocation;
-    
-    showVideoScreen(`${cleanName} (${currentSpecies}) <br> <span style="font-size:0.8em">📍 ${currentLocation}</span>`);
-    log("Iniciando cámara...");
 
-    // 2. Solicitar Hardware
+    // UI Update
+    registerForm.classList.add('hidden');
+    videoScreen.classList.remove('hidden');
+    videoInfoText.innerHTML = `🔴 TRANSMITIENDO: ${displayName}`;
+    statusMsg.innerText = "Iniciando cámara...";
+    
+    // Guardar estado global
+    currentPetName = displayName;
+    currentSpecies = species;
+    currentLocation = cleanName;
+
+    // Iniciar Media
     navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }, 
         audio: true 
@@ -99,157 +157,155 @@ function startCameraMode() {
     .then(stream => {
         localStream = stream;
         remoteVideo.srcObject = stream;
-        remoteVideo.muted = true; // Mute local para evitar eco
-        remoteVideo.setAttribute("playsinline", true);
-        remoteVideo.play().catch(e => log("Local play error: " + e));
-
-        log("Cámara OK. Conectando a servidor...");
-
+        remoteVideo.muted = true; 
+        
         peer = new Peer(fullId, peerConfig);
 
         peer.on('open', (id) => {
-            statusMsg.innerText = "✅ TRANSMITIENDO: " + cleanName;
-            statusMsg.style.color = "#0f0";
-            log(`Registrado: ${cleanName}`);
+            statusMsg.innerText = `✅ EN VIVO | ID: ${cleanName}`;
+            statusMsg.style.color = "#2ecc71";
         });
 
-        // Manejo de Conexiones de Datos (Para enviar info)
         peer.on('connection', (conn) => {
-            log("🔗 Visor conectado a datos.");
+            // Cuando alguien se conecta al chat de datos, le enviamos info de quién somos
             conn.on('open', () => {
-                // Enviar info actual apenas se conecten
-                sendInfo(conn);
-            });
-            conn.on('error', (err) => {
-                 log("Error canal de datos (Cámara): " + err);
+                conn.send({
+                    type: 'info',
+                    name: currentPetName,
+                    species: currentSpecies,
+                    location: currentLocation
+                });
             });
         });
 
-        // Manejo de llamadas de Video
         peer.on('call', (call) => {
-            log("📞 Enviando video...");
             call.answer(localStream);
         });
 
         peer.on('error', (err) => {
-            log("ERROR PEER CÁMARA: " + err.type + " - " + err.message);
             if(err.type === 'unavailable-id') {
-                alert("El nombre '" + cleanName + "' ya está en uso.");
+                alert("Ya existe una cámara con este nombre/ubicación.");
                 uiGoBack();
             } else {
-                 statusMsg.innerText = "Error crítico de conexión.";
+                 statusMsg.innerText = "Error de conexión: " + err.type;
             }
         });
     })
     .catch(err => {
-        alert("Error al acceder a cámara: " + err.message);
+        alert("Error de cámara: " + err.message);
         uiGoBack();
     });
 }
 
-// --- FUNCIÓN: ACTUALIZAR UBICACIÓN EN VIVO ---
-function updateLiveLocation() {
-    // 1. Obtener el nuevo valor del selector
-    const newLoc = liveLocationSelector.value;
-    currentLocation = newLoc; // Actualizar variable global
 
-    // 2. Actualizar mi propia pantalla
-    videoInfoText.innerHTML = `${currentPetName} (${currentSpecies}) <br> <span style="font-size:0.8em">📍 ${currentLocation}</span>`;
-    log("Cambio de ubicación: " + currentLocation);
+// --- MODO VISOR & MAPA (RECEPTOR) ---
 
-    // 3. Enviar la nueva info a TODOS los conectados
-    if (peer && peer.connections) {
-        // peer.connections es un objeto donde las claves son los IDs de los conectados
-        Object.values(peer.connections).forEach(connections => {
-            connections.forEach(conn => {
-                if (conn.open) {
-                    sendInfo(conn);
+// 1. Lógica para "Escanear" qué habitaciones están online
+function checkActiveCameras() {
+    mapStatusText.innerText = "📡 Escaneando cámaras disponibles...";
+    
+    // Usamos un Peer temporal solo para hacer "ping"
+    const tempPeer = new Peer(peerConfig);
+
+    tempPeer.on('open', () => {
+        fixedRooms.forEach(roomId => {
+            const fullId = APP_PREFIX + roomId;
+            const conn = tempPeer.connect(fullId, { reliable: true });
+            
+            const uiElement = document.querySelector(`[data-room="${roomId}"]`);
+
+            // Si la conexión de datos se abre, significa que la cámara está online
+            conn.on('open', () => {
+                if(uiElement) {
+                    uiElement.classList.add('online');
+                    uiElement.classList.remove('offline');
                 }
+                // Cerramos inmediatamente, solo queríamos saber si existía
+                conn.close();
             });
-        });
-    }
-}
 
-// Función auxiliar para enviar el objeto de datos
-function sendInfo(conn) {
-    conn.send({
-        type: 'info',
-        petName: currentPetName,
-        species: currentSpecies,
-        location: currentLocation
+            // Manejo básico de errores (si no conecta, asumimos offline)
+            conn.on('error', () => { /* Ignorar, permanece offline */ });
+            
+            // Timeout de seguridad por si se queda colgado
+            setTimeout(() => { if(conn.open) conn.close(); }, 2000);
+        });
+
+        // Destruir el peer temporal después de un tiempo prudencial (5s)
+        setTimeout(() => {
+            mapStatusText.innerText = "✅ Escaneo completado. Selecciona una cámara verde.";
+            tempPeer.destroy();
+        }, 5000);
     });
 }
 
+// 2. Conectar desde el Mapa (Click)
+function connectToRoom(roomId) {
+    const uiElement = document.querySelector(`[data-room="${roomId}"]`);
+    // Permitimos intentar conectar incluso si no sale verde (por si acaso)
+    // pero idealmente solo a las online.
+    
+    const fullId = APP_PREFIX + roomId;
+    // Nombre por defecto, se actualizará si recibimos metadatos
+    let display = roomId.toUpperCase();
+    
+    startConnection(fullId, display);
+}
 
-// --- MODO VISOR (RECEPTOR) ---
+// 3. Conectar Manualmente
 function startViewerMode() {
     const rawInput = document.getElementById('view-pet-id').value;
     const cleanName = cleanId(rawInput);
-
-    if (!cleanName) return alert("Ingresa el nombre a buscar.");
-
-    const targetId = APP_PREFIX + cleanName;
+    if (!cleanName) return alert("Ingresa un nombre.");
     
-    // Aseguramos que el selector esté OCULTO para el dueño
-    liveLocationSelector.classList.add('hidden');
-    
-    showVideoScreen("Buscando: " + cleanName + "...");
-    log("Buscando cámara...");
+    startConnection(APP_PREFIX + cleanName, cleanName.toUpperCase());
+}
+
+// 4. Lógica Core de Conexión Visor
+function startConnection(targetId, initialDisplayName) {
+    if(peer) peer.destroy(); // Asegurar limpieza
+
+    // Cambiar pantalla
+    viewerMap.classList.add('hidden');
+    videoScreen.classList.remove('hidden');
+    videoInfoText.innerText = "Buscando: " + initialDisplayName + "...";
+    statusMsg.innerText = "Estableciendo conexión...";
 
     peer = new Peer(peerConfig);
 
     peer.on('open', (id) => {
-        log("Conectado como Visor con ID: " + id); // Log más detallado
-        statusMsg.innerText = "Contactando cámara...";
-
-        // 1. Conectar canal de DATOS
+        // A. Conectar Datos para obtener Nombre Real y Especie
         const conn = peer.connect(targetId);
 
-        conn.on('open', () => {
-            log("🔗 Canal de datos abierto.");
-        });
-
-        // AQUÍ RECIBIMOS LAS ACTUALIZACIONES DE UBICACIÓN
+        conn.on('open', () => { log("Datos conectados"); });
         conn.on('data', (data) => {
             if(data.type === 'info') {
-                // Ajuste de tamaño de fuente para mejor visibilidad
-                videoInfoText.innerHTML = `${data.petName} (${data.species}) <br><span style="font-size:0.9em; opacity:0.9; color: #FFCCBC;">📍 ${data.location}</span>`; 
-                log("📥 Ubicación actualizada: " + data.location);
+                // Actualizar UI con el nombre real de la mascota
+                videoInfoText.innerText = `${data.species} VIENDO A: ${data.name}`;
             }
         });
-        
-        conn.on('error', (err) => {
-            log("Error canal de datos (Visor): " + err);
-        });
-        
-        conn.on('close', () => {
-            log("Canal de datos cerrado.");
-        });
 
-
-        // 2. Iniciar llamada de VIDEO
+        // B. Iniciar Video
+        // Truco: PeerJS a veces necesita un stream de salida para recibir bien
         const canvas = document.createElement('canvas');
-        canvas.width = 1; canvas.height = 1;
-        const fakeStream = canvas.captureStream(10); // Truco para que iOS active audio
+        const fakeStream = canvas.captureStream(10); 
 
         const call = peer.call(targetId, fakeStream);
 
         if(!call) {
-            log("Error: No se pudo llamar.");
+            videoInfoText.innerText = "Error al llamar.";
             return;
         }
 
         call.on('stream', (remoteStream) => {
-            log("✅ VIDEO RECIBIDO");
             statusMsg.classList.add('hidden');
-            
             remoteVideo.srcObject = remoteStream;
-            remoteVideo.setAttribute("playsinline", true);
             
+            // Promesa de Play para evitar bloqueo de autoplay
             const playPromise = remoteVideo.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    statusMsg.innerText = "TOCA LA PANTALLA PARA VER";
+                    statusMsg.innerText = "⚠️ TOCA LA PANTALLA PARA VER VIDEO";
                     statusMsg.classList.remove('hidden');
                     document.body.addEventListener('click', () => {
                         remoteVideo.play();
@@ -259,26 +315,31 @@ function startViewerMode() {
             }
         });
 
-        call.on('error', (err) => {
-            log("Error llamada: " + err);
-            statusMsg.innerText = "Corte de transmisión.";
+        call.on('close', () => {
+            statusMsg.innerText = "Transmisión finalizada.";
+            statusMsg.classList.remove('hidden');
         });
         
-        call.on('close', () => {
-            log("Llamada cerrada.");
-            statusMsg.innerText = "Transmisión finalizada o perdida.";
+        call.on('error', (err) => {
+            console.error(err);
+            statusMsg.innerText = "Corte de señal.";
             statusMsg.classList.remove('hidden');
         });
     });
 
-    // --- CORRECCIÓN CLAVE: MANEJO DE ERROR DEL PEER PRINCIPAL ---
     peer.on('error', (err) => {
-        log("ERROR PEER VISOR: " + err.type + " - " + err.message);
-        // El error que mencionas ('Could not connect to peer') se reporta aquí como 'peer-unavailable'
-        if(err.type === 'peer-unavailable' || err.type === 'network') {
-            statusMsg.innerText = "Cámara no encontrada. Asegúrate que el ID sea correcto y esté transmitiendo.";
+        console.log(err.type);
+        if(err.type === 'peer-unavailable') {
+            statusMsg.innerText = "❌ Cámara APAGADA o NO EXISTE.";
+            statusMsg.style.color = "#e74c3c";
+            statusMsg.classList.remove('hidden');
+            
+            // Volver al mapa automáticamente después de 3s
+            setTimeout(() => {
+                if(!videoScreen.classList.contains('hidden')) uiShowMap();
+            }, 3000);
         } else {
-             statusMsg.innerText = "Error de conexión: " + err.type;
+            statusMsg.innerText = "Error: " + err.type;
         }
     });
 }
