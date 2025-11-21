@@ -7,6 +7,8 @@
     --color-text-dark: #3E2723;    
     --color-text-light: #FFFFFF;   
     --color-accent: #8D6E63;       
+    --color-success: #2ecc71;
+    --color-offline: #95a5a6;
 }
 
 /* Estilos Generales */
@@ -68,11 +70,11 @@ a {
 
 /* --- Contenedor Principal --- */
 .main-monitoreo {
-    padding: 80px 5%;
+    padding: 40px 5%;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70vh;
+    min-height: 80vh;
     text-align: center;
     background-color: var(--color-background);
 }
@@ -140,6 +142,7 @@ a {
     border: none;
     transition: background-color 0.3s;
     width: 100%;
+    cursor: pointer;
 }
 
 .btn-main-monitoreo:hover {
@@ -157,6 +160,7 @@ a {
     margin-top: 20px;
     transition: background-color 0.3s, color 0.3s;
     width: 100%;
+    cursor: pointer;
 }
 
 .btn-secondary-monitoreo:hover {
@@ -240,7 +244,7 @@ a {
     background: rgba(0,0,0,0.3); 
     padding: 10px;
     border-radius: 8px;
-    backdrop-filter: blur(5px); /* Efecto vidrio borroso */
+    backdrop-filter: blur(5px); 
 }
 
 .live-indicator {
@@ -269,11 +273,10 @@ a {
 
 .live-selector:focus {
     outline: none;
-    background-color: rgba(0, 0, 0, 0.8); /* Fondo oscuro al abrir */
+    background-color: rgba(0, 0, 0, 0.8); 
     border-color: var(--color-secondary);
 }
 
-/* Las opciones del selector siempre tendrán fondo oscuro para leerse bien */
 .live-selector option {
     background-color: #333;
     color: white;
@@ -297,18 +300,27 @@ a {
 video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Para llenar pantalla movil */
     background: #1a1a1a;
 }
 
-#status-msg {
+/* Contenedor del mensaje de estado para centrarlo bien */
+#status-msg-container {
     position: absolute;
+    bottom: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+
+#status-msg {
     color: white;
-    background: rgba(62, 39, 35, 0.8);
+    background: rgba(62, 39, 35, 0.9);
     padding: 15px 25px;
     border-radius: 50px;
     font-weight: 500;
-    bottom: 100px; 
+    pointer-events: auto;
 }
 
 @keyframes pulse {
@@ -325,7 +337,6 @@ video {
     .nav-links { margin-top: 10px; padding-left: 0; }
     .nav-links li { margin: 5px 15px; }
     
-    /* Ajuste para el header del video en móviles */
     .video-header {
         flex-direction: column;
         align-items: flex-start;
@@ -333,7 +344,7 @@ video {
     }
     .btn-close {
         align-self: flex-end;
-        margin-top: -40px; /* Subir el botón cerrar */
+        margin-top: -40px;
     }
     .live-selector {
         margin-left: 0;
@@ -342,7 +353,7 @@ video {
     }
 }
 
-/* ANIMACIONES (Mantenemos las mismas) */
+/* ANIMACIONES */
 .animated-icon-container {
     height: 80px;
     display: flex;
@@ -466,4 +477,194 @@ video {
 
 @keyframes blinkRec {
     50% { opacity: 0; }
+}
+
+/* --- ESTILOS DEL MAPA (BLUEPRINT STYLE) --- */
+.map-wrapper {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.map-legend {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85em;
+    margin-top: 5px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dot.green { background: var(--color-success); box-shadow: 0 0 5px var(--color-success); }
+.dot.gray { background: var(--color-offline); opacity: 0.5; }
+
+.blueprint-container {
+    background-color: #2c3e50; /* Azul oscuro plano arquitectónico */
+    padding: 20px;
+    border-radius: 10px;
+    border: 4px solid #34495e;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+    overflow-x: auto; /* Para móviles si es muy ancho */
+}
+
+.blueprint-grid {
+    display: grid;
+    gap: 15px;
+    /* Layout visual del mapa */
+    grid-template-areas: 
+        "gatos gatos vet vet"
+        "juegos perrosA perrosA bano"
+        "recepcion perrosB perrosB bano";
+    min-width: 600px; /* Asegura que no se rompa en móviles muy pequeños */
+}
+
+/* Áreas específicas */
+.area-recepcion { grid-area: recepcion; background: #e67e22; }
+.area-juegos { grid-area: juegos; background: #f1c40f; }
+.area-vet { grid-area: vet; background: #e74c3c; }
+.area-bano { grid-area: bano; background: #3498db; }
+.cats { grid-area: gatos; background: #9b59b6; }
+.dogs-a { grid-area: perrosA; background: #27ae60; }
+.dogs-b { grid-area: perrosB; background: #2ecc71; }
+
+/* ESTADOS DE HABITACIONES (DINÁMICO) */
+
+.room {
+    padding: 20px;
+    border-radius: 5px;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    font-weight: bold;
+    position: relative;
+    cursor: default; /* Por defecto no clickeable hasta saber estado */
+    transition: all 0.3s;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6; /* Apagado por defecto */
+    filter: grayscale(0.8);
+}
+
+/* Clase añadida por JS cuando está online */
+.room.online {
+    opacity: 1;
+    filter: grayscale(0);
+    border-color: var(--color-success);
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+    cursor: pointer;
+    z-index: 10;
+}
+
+.room.online:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(46, 204, 113, 0.8);
+}
+
+/* Icono de cámara */
+.cam-icon {
+    font-size: 1.5em;
+    margin-top: 5px;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    display: none; /* Oculto hasta estar online */
+}
+
+.room.online .cam-icon {
+    display: block;
+    animation: blinkCam 2s infinite;
+}
+
+/* Sub-habitaciones individuales (cuadritos pequeños) */
+.room-group {
+    padding: 10px;
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 5px;
+    display: flex;
+    gap: 5px;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.sub-room {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: default;
+    font-size: 0.8em;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+}
+
+.sub-room.online {
+    background: var(--color-success);
+    color: #fff;
+    opacity: 1;
+    border-color: #fff;
+    box-shadow: 0 0 10px var(--color-success);
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.sub-room.online:hover {
+    transform: scale(1.1);
+}
+
+/* Badge de Admin */
+.admin-badge {
+    background: #c0392b;
+    color: white;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+@keyframes blinkCam {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* --- RESPONSIVIDAD MAPA --- */
+@media (max-width: 700px) {
+    .blueprint-grid {
+        grid-template-areas: 
+            "recepcion"
+            "vet"
+            "gatos"
+            "juegos"
+            "perrosA"
+            "perrosB"
+            "bano";
+        min-width: unset;
+    }
+    .room { min-height: 80px; }
 }
