@@ -19,80 +19,166 @@
         </nav>
     </header>
 
-    <main class="main-monitoreo">
+ <main class="main-monitoreo">
         
         <div class="monitoreo-container" id="menu-selection">
             <h1>Centro de Monitoreo</h1>
-            <p class="subtitle">¿Qué función cumple este dispositivo?</p>
+            <p class="subtitle">Seleccione el modo de operación</p>
             
             <div class="card-grid">
                 <div class="access-card live-view">
                     <div class="card-icon animated-icon-container">
                         <div class="monitor-anim">
-                            <div class="monitor-screen">
-                                <div class="play-btn">▶</div>
-                            </div>
+                            <div class="monitor-screen"><div class="play-btn">▶</div></div>
                             <div class="monitor-stand"></div>
                         </div>
                     </div>
                     <h2>Soy el Dueño</h2>
-                    <p>Quiero ver a mi mascota.</p>
-                    <button class="btn-main-monitoreo" onclick="uiShowViewer()">Ver Cámara</button>
+                    <p>Ver el mapa de instalaciones.</p>
+                    <button class="btn-main-monitoreo" onclick="uiShowMap()">Abrir Mapa</button>
                 </div>
 
                 <div class="access-card registration">
                     <div class="card-icon animated-icon-container">
                          <div class="camera-anim">
-                            <div class="cam-body">
-                                <div class="cam-lens"></div>
-                                <div class="cam-rec-dot"></div>
-                            </div>
+                            <div class="cam-body"><div class="cam-lens"></div><div class="cam-rec-dot"></div></div>
                         </div>
                     </div>
                     <h2>Soy la Cámara</h2>
-                    <p>Usar este dispositivo como vigilancia.</p>
-                    <button class="btn-secondary-monitoreo" onclick="uiShowRegister()">Iniciar Cámara</button>
+                    <p>Solo personal autorizado.</p>
+                    <button class="btn-secondary-monitoreo" onclick="uiShowLogin()">Acceso Admin</button>
                 </div>
             </div>
         </div>
 
-        <div class="form-container hidden" id="register-form">
-            <h2>📹 Configurar Cámara</h2>
+        <div class="form-container hidden" id="admin-login-form">
+            <h2>🔒 Acceso Restringido</h2>
+            <p>Ingrese credenciales de administrador</p>
+            <input type="text" id="admin-user" placeholder="Usuario" class="input-field">
+            <input type="password" id="admin-pass" placeholder="Contraseña" class="input-field">
             
-            <p>1. ID de la Mascota (sin espacios):</p>
-            <input type="text" id="reg-pet-id" placeholder="Ej: firulais123" class="input-field">
-            
-            <p>2. Especie:</p>
-            <select id="reg-species" class="input-field">
-                <option value="Perro">🐶 Perro</option>
-                <option value="Gato">🐱 Gato</option>
-                <option value="Otro">🐾 Otro</option>
-            </select>
-
-            <p>3. Ubicación Inicial:</p>
-            <select id="reg-location" class="input-field">
-                <option value="Área de Juegos (Perros)">🎾 Juegos Perros</option>
-                <option value="Área de Juegos (Gatos)">🧶 Juegos Gatos</option>
-                <option value="Área de Baño">🛁 Área de Baño</option>
-                <option value="Consultorio Veterinario">🩺 Veterinario</option>
-                <option value="Descanso / Jaulas">💤 Zona de Descanso</option>
-            </select>
-
-            <p style="font-size: 0.8em; color: #666; margin-top: 10px;">*Esta información se mostrará en el video.</p>
-
             <div class="button-group">
                 <button class="btn-secondary-monitoreo" onclick="uiGoBack()">Cancelar</button>
-                <button class="btn-main-monitoreo" onclick="startCameraMode()">🔴 Transmitir</button>
+                <button class="btn-main-monitoreo" onclick="checkAdminAuth()">Ingresar</button>
             </div>
         </div>
 
-        <div class="form-container hidden" id="viewer-form">
-            <h2>📺 Conectar</h2>
-            <p>Ingresa el ID de la mascota:</p>
-            <input type="text" id="view-pet-id" placeholder="Ej: firulais123" class="input-field">
+        <div class="form-container hidden" id="register-form">
+            <h2>📹 Configurar Transmisión</h2>
+            <p class="admin-badge">MODO ADMINISTRADOR</p>
+            
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label style="margin-right: 10px;">
+                    <input type="radio" name="streamType" value="fixed" checked onchange="toggleStreamType()"> Habitación Fija
+                </label>
+                <label>
+                    <input type="radio" name="streamType" value="custom" onchange="toggleStreamType()"> Mascota/Extra
+                </label>
+            </div>
+
+            <div id="fixed-room-section">
+                <select id="reg-room-id" class="input-field">
+                    <option value="recepcion">🏨 Recepción</option>
+                    <option value="juegos">🎾 Zona de Juegos</option>
+                    <option value="vet">🩺 Consultorio Vet</option>
+                    <option value="bano">🛁 Área de Baño</option>
+                    
+                    <optgroup label="Zona Gatos">
+                        <option value="gato1">🐱 Cuarto Gato 1</option>
+                        <option value="gato2">🐱 Cuarto Gato 2</option>
+                        <option value="gato3">🐱 Cuarto Gato 3</option>
+                        <option value="gato4">🐱 Cuarto Gato 4</option>
+                        <option value="gato5">🐱 Cuarto Gato 5</option>
+                    </optgroup>
+
+                    <optgroup label="Zona Perros A">
+                        <option value="perroA1">🐶 Perro A-1</option>
+                        <option value="perroA2">🐶 Perro A-2</option>
+                        <option value="perroA3">🐶 Perro A-3</option>
+                        <option value="perroA4">🐶 Perro A-4</option>
+                        <option value="perroA5">🐶 Perro A-5</option>
+                    </optgroup>
+
+                    <optgroup label="Zona Perros B">
+                        <option value="perroB1">🐕 Perro B-1</option>
+                        <option value="perroB2">🐕 Perro B-2</option>
+                        <option value="perroB3">🐕 Perro B-3</option>
+                        <option value="perroB4">🐕 Perro B-4</option>
+                        <option value="perroB5">🐕 Perro B-5</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div id="custom-room-section" class="hidden">
+                <input type="text" id="custom-pet-name" placeholder="Nombre de la Mascota (Ej: Firulais)" class="input-field">
+                <select id="custom-pet-type" class="input-field">
+                    <option value="🐶">Perro</option>
+                    <option value="🐱">Gato</option>
+                    <option value="🐰">Otro</option>
+                </select>
+            </div>
+
             <div class="button-group">
-                <button class="btn-secondary-monitoreo" onclick="uiGoBack()">Cancelar</button>
-                <button class="btn-main-monitoreo" onclick="startViewerMode()">Conectar</button>
+                <button class="btn-secondary-monitoreo" onclick="uiGoBack()">Salir</button>
+                <button class="btn-main-monitoreo" onclick="startCameraMode()">🔴 Iniciar Live</button>
+            </div>
+        </div>
+
+        <div class="map-wrapper hidden" id="viewer-map">
+            <div class="map-header">
+                <div style="text-align: left;">
+                    <h2>🗺️ Mapa en Vivo</h2>
+                    <div class="map-legend">
+                        <span class="legend-item"><span class="dot green"></span> En Vivo</span>
+                        <span class="legend-item"><span class="dot gray"></span> Desconectado</span>
+                    </div>
+                </div>
+                <button class="btn-secondary-monitoreo" style="width: auto; margin:0;" onclick="uiGoBack()">Volver</button>
+            </div>
+            
+            <p id="map-status-text" style="color: var(--color-primary); font-size: 0.9em; margin-bottom: 10px;">
+                Escaneando cámaras activas...
+            </p>
+
+            <div class="blueprint-container">
+                <div class="blueprint-grid">
+                    <div class="room area-recepcion" data-room="recepcion" onclick="connectToRoom('recepcion')"><span>Recepción</span><div class="cam-icon">📷</div></div>
+                    <div class="room area-vet" data-room="vet" onclick="connectToRoom('vet')"><span>Vet</span><div class="cam-icon">📷</div></div>
+                    <div class="room area-bano" data-room="bano" onclick="connectToRoom('bano')"><span>Baño</span><div class="cam-icon">📷</div></div>
+                    <div class="room area-juegos" data-room="juegos" onclick="connectToRoom('juegos')"><span>Zona Juegos</span><div class="cam-icon">📷</div></div>
+
+                    <div class="room-group cats">
+                        <div class="sub-room" data-room="gato1" onclick="connectToRoom('gato1')">🐱 1</div>
+                        <div class="sub-room" data-room="gato2" onclick="connectToRoom('gato2')">🐱 2</div>
+                        <div class="sub-room" data-room="gato3" onclick="connectToRoom('gato3')">🐱 3</div>
+                        <div class="sub-room" data-room="gato4" onclick="connectToRoom('gato4')">🐱 4</div>
+                        <div class="sub-room" data-room="gato5" onclick="connectToRoom('gato5')">🐱 5</div>
+                    </div>
+
+                    <div class="room-group dogs-a">
+                        <div class="sub-room" data-room="perroA1" onclick="connectToRoom('perroA1')">🐶 A1</div>
+                        <div class="sub-room" data-room="perroA2" onclick="connectToRoom('perroA2')">🐶 A2</div>
+                        <div class="sub-room" data-room="perroA3" onclick="connectToRoom('perroA3')">🐶 A3</div>
+                        <div class="sub-room" data-room="perroA4" onclick="connectToRoom('perroA4')">🐶 A4</div>
+                        <div class="sub-room" data-room="perroA5" onclick="connectToRoom('perroA5')">🐶 A5</div>
+                    </div>
+
+                    <div class="room-group dogs-b">
+                        <div class="sub-room" data-room="perroB1" onclick="connectToRoom('perroB1')">🐕 B1</div>
+                        <div class="sub-room" data-room="perroB2" onclick="connectToRoom('perroB2')">🐕 B2</div>
+                        <div class="sub-room" data-room="perroB3" onclick="connectToRoom('perroB3')">🐕 B3</div>
+                        <div class="sub-room" data-room="perroB4" onclick="connectToRoom('perroB4')">🐕 B4</div>
+                        <div class="sub-room" data-room="perroB5" onclick="connectToRoom('perroB5')">🐕 B5</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="manual-input-link">
+                <p>¿Buscas una cámara privada? <a href="#" onclick="toggleManualInput()">Ingresa el nombre aquí</a></p>
+                <div id="manual-input-box" class="hidden" style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+                    <input type="text" id="view-pet-id" placeholder="Nombre mascota (Ej: Firulais)" class="input-field" style="width:200px; margin:0;">
+                    <button class="btn-main-monitoreo" style="width:auto; margin:0;" onclick="startViewerMode()">Buscar</button>
+                </div>
             </div>
         </div>
 
@@ -100,23 +186,22 @@
             <div class="video-header">
                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
                     <span class="live-indicator">🔴 EN VIVO</span>
+                    <span id="video-info-text" style="margin-left: 10px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Cargando...</span>
                     
-                    <span id="video-info-text" style="margin-left: 10px; font-weight: 600; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Conectando...</span>
-
                     <select id="live-location-selector" class="live-selector hidden" onchange="updateLiveLocation()">
-                        <option value="Área de Juegos (Perros)">🎾 Juegos Perros</option>
-                        <option value="Área de Juegos (Gatos)">🧶 Juegos Gatos</option>
-                        <option value="Área de Baño">🛁 Área de Baño</option>
-                        <option value="Consultorio Veterinario">🩺 Veterinario</option>
-                        <option value="Descanso / Jaulas">💤 Zona de Descanso</option>
+                         <option value="recepcion">🏨 Recepción</option>
+                         <option value="juegos">🎾 Juegos</option>
+                         <option value="vet">🩺 Vet</option>
                     </select>
                 </div>
-                <button class="btn-close" onclick="location.reload()">✖ Salir</button>
+                <button class="btn-close" onclick="uiShowMap()">✖ Mapa</button>
             </div>
             
             <video id="remote-video" autoplay playsinline muted></video>
             
-            <p id="status-msg">Inicializando...</p>
+            <div id="status-msg-container">
+                <p id="status-msg">Conectando...</p>
+            </div>
         </div>
 
     </main>
